@@ -81,6 +81,7 @@ function form() {
   const rooms = info.rooms || [];
   app.innerHTML = brand() + `<div class="card"><div class="eyebrow">Bejelentkezés</div><h1>Sorszám kérése</h1>
     <p class="muted" style="margin:0">Néhány másodperc, és itt követheti, mikor kerül sorra. A váróterem kijelzője is mutatja a hívást.</p>
+    <p class="note" style="margin:0">Ha a bejáratnál lévő tableten már kapott sorszámot, ne kérjen újat. Elég a kijelzőt figyelnie.</p>
     <form id="f" style="display:flex;flex-direction:column;gap:14px">
       ${rooms.length > 1 ? `<div><label for="rm">Kihez érkezett?</label><select id="rm"><option value="0">Nem tudom / bármelyik</option>${rooms.map(r => `<option value="${r.id}">${esc(r.doctor ? r.doctor + " (" + r.name + ")" : r.name)}</option>`).join("")}</select></div>` : ""}
       <button class="btn" type="submit">Sorszámot kérek</button>

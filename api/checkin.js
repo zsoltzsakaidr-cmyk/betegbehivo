@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     if (valid) {
       try { await maybeSync(day); } catch {}
       const d = await loadDay(day);
-      appointments = d.patients.filter(p => p.src === "cal" && p.status === "waiting" && !p.arrived)
+      appointments = d.patients.filter(p => p.src === "cal" && p.status === "waiting" && !p.phone) // a tableten megérkezett is választható, hogy a telefonon kövesse
         .sort((a, b) => a.apptAt - b.apptAt).map(p => ({ id: p.id, time: p.time }));
     }
     return send(res, 200, { valid, clinicName: s.clinicName, clinicSub: s.clinicSub, logo: s.logo, appointments,
@@ -31,8 +31,9 @@ export default async function handler(req, res) {
       if (a.claim) {
         p = d.patients.find(x => x.id === a.claim && x.src === "cal");
         if (!p || p.status !== "waiting") { err = "gone"; return; }
-        if (p.arrived) { err = "taken"; return; }
-        p.arrived = true; p.arrivedAt = Date.now(); p.k = rid(16);
+        if (p.phone) { err = "taken"; return; }
+        if (!p.arrived) { p.arrived = true; p.arrivedAt = Date.now(); }
+        p.phone = true; p.k = rid(16);
       } else {
         p = newPatient(d.patients, settings, { initials: "", room: +a.room || 0, src: "qr" });
         d.patients.push(p);
