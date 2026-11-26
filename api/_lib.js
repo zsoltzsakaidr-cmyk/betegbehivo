@@ -66,7 +66,7 @@ export async function redis(...cmd) {
 
 export const DEFAULT_SETTINGS = {
   clinicName: "Dr. Zsákai Zsolt", clinicSub: "Ortopéd Sebészeti Magánrendelés", prefix: "A",
-  rooms: [{ id: 1, name: "1-es rendelő", doctor: "" }, { id: 2, name: "2-es rendelő", doctor: "" }],
+  rooms: [{ id: 1, name: "Rendelő", doctor: "" }], showReception: false,
   showInitials: true, speech: true, gong: true, showQr: true, logo: ""
 };
 
@@ -118,6 +118,7 @@ export async function loadSettings(fresh = false) {
   if (!fresh && sCache && Date.now() - sCache.at < 5000) return sCache.val;
   const raw = await redis("GET", "bh:settings");
   const stored = raw ? JSON.parse(raw) : {};
+  if (Array.isArray(stored.rooms) && stored.rooms.length === 2 && stored.rooms[0].name === "1-es rendelő" && stored.rooms[1].name === "2-es rendelő" && !stored.rooms[0].doctor && !stored.rooms[1].doctor) delete stored.rooms; // régi alapérték
   if (stored.clinicName === "Magánrendelő") { delete stored.clinicName; delete stored.clinicSub; } // régi alapérték
   const val = Object.assign({}, DEFAULT_SETTINGS, stored);
   sCache = { val, at: Date.now() };

@@ -213,7 +213,8 @@ const DEFAULT_SETTINGS = {
   clinicName: "Dr. Zsákai Zsolt",
   clinicSub: "Ortopéd Sebészeti Magánrendelés",
   prefix: "A",
-  rooms: [{id:1, name:"1-es rendelő", doctor:""}, {id:2, name:"2-es rendelő", doctor:""}],
+  rooms: [{id:1, name:"Rendelő", doctor:""}],
+  showReception: false,
   showInitials: true,
   speech: true,
   gong: true,
@@ -312,7 +313,7 @@ const Sound = (() => {
 function spoken(p) {
   const name = roomName(p.calledRoom);
   const code = p.code.replace("-", " ").replace(/\b0+(\d)/, "$1");
-  const where = /rendelő$/i.test(name) ? "a " + name + "be" : name;
+  const where = /rendelő$/i.test(name) ? "a " + (name === "Rendelő" ? "rendelő" : name) + "be" : name;
   return `${code}. Kérjük, fáradjon ${where}.`;
 }
 
@@ -323,7 +324,7 @@ function brandHTML(sub) {
   return `<div class="brand">${logo}<div style="min-width:0"><div class="brand-name">${esc(s.clinicName)}</div><div class="brand-sub">${esc(sub)}</div></div></div>`;
 }
 function shell(active, sub, inner) {
-  const nav = [["", "Kezdőlap"], ["kijelzo", "Váró-kijelző"], ["orvos", "Orvos"], ["recepcio", "Recepció"], ["beallitasok", "Beállítások"]]
+  const nav = [["", "Kezdőlap"], ["kijelzo", "Váró-kijelző"], ["orvos", "Orvos"], ...(S().showReception || active === "recepcio" ? [["recepcio", "Recepció"]] : []), ["beallitasok", "Beállítások"]]
     .map(([h, l]) => `<a href="#${h}" class="${active === h ? "on" : ""}">${l}</a>`).join("") + `<a href="#kilepes">Kilépés</a>`;
   const banner = "";
   return `<div class="wrap"><header class="top">${brandHTML(sub)}<nav class="nav">${nav}</nav></header>${banner}${inner}</div>`;
@@ -339,14 +340,14 @@ function viewHome() {
   app.innerHTML = shell("", S().clinicSub || "Betegbehívó rendszer", `
     <div class="eyebrow">Betegbehívó</div>
     <h1 class="hero-h">Nyugodt váróterem, egy gombnyomásos behívás.</h1>
-    <p class="muted" style="max-width:62ch;margin:0">Három nézet, amelyek valós időben látják egymást. Nyisd meg mindegyiket a saját eszközén: a kijelzőt a váróbeli TV-n, az orvosi felületet a rendelő tabletjén vagy gépén, a recepciót az asztalnál.</p>
+    <p class="muted" style="max-width:62ch;margin:0">Nyisd meg a kijelzőt a váróbeli TV-n, az orvosi felületet a rendelő gépén. A betegek a kijelzőn látható QR-kóddal maguk kérnek sorszámot, a kettő valós időben látja egymást.</p>
     <div class="tiles">
       <a class="tile" href="#kijelzo"><div class="ico">${ICON.tv}</div><h3>Váró-kijelző</h3><p class="muted" style="margin:0">Teljes képernyős nézet a TV-re. Gong és magyar bemondás hívásnál, csak sorszám és monogram látszik.</p></a>
-      <div class="tile"><div class="ico">${ICON.doc}</div><h3>Orvosi felület</h3><p class="muted" style="margin:0">Következő, Újrahívás, Nem jelent meg. Válaszd ki a rendelőt:</p><div class="links">${rooms}</div></div>
-      <a class="tile" href="#recepcio"><div class="ico">${ICON.desk}</div><h3>Recepció</h3><p class="muted" style="margin:0">Érkező beteg rögzítése, sorszám kiadása, a napi sor áttekintése.</p></a>
+      <div class="tile"><div class="ico">${ICON.doc}</div><h3>Orvosi felület</h3><p class="muted" style="margin:0">Következő, Újrahívás, Nem jelent meg${S().rooms.length > 1 ? ". Válaszd ki a rendelőt:" : ", és kézzel is adhatsz ki sorszámot."}</p>${S().rooms.length > 1 ? `<div class="links">${rooms}</div>` : `<div class="links"><a href="#orvos-${S().rooms[0].id}">Megnyitás</a></div>`}</div>
+      <a class="tile" href="#recepcio" ${S().showReception ? "" : "hidden"}><div class="ico">${ICON.desk}</div><h3>Recepció</h3><p class="muted" style="margin:0">Érkező beteg rögzítése, sorszám kiadása, a napi sor áttekintése.</p></a>
     </div>
     <div class="steps">
-      <div class="card"><div class="eyebrow">Kipróbálás</div><p>Nyisd meg a Recepciót, adj ki 2–3 sorszámot, majd egy másik fülön az Orvos nézetben nyomd meg a „Következő beteg” gombot. A Váró-kijelző azonnal mutatja.</p></div>
+      <div class="card"><div class="eyebrow">Kipróbálás</div><p>Olvasd be telefonnal a kijelzőn látható QR-kódot, és kérj sorszámot. Az Orvos nézetben a „Következő beteg” gombbal hívd be, a kijelzőn és a telefonon is megjelenik.</p></div>
       <div class="card"><div class="eyebrow">Adatvédelem</div><p>A kijelzőn csak sorszám és opcionális monogram jelenik meg. Teljes nevet és egészségügyi adatot a rendszer nem tárol, a régi napok sorai automatikusan törlődnek.</p></div>
       <div class="card"><div class="eyebrow">Arculat</div><p>A Beállításokban feltölthető a logó, átírható a rendelő neve és a rendelők listája.</p></div>
     </div>`);
@@ -451,18 +452,19 @@ function viewDisplay() {
 /* Orvosi felület */
 function viewDoctor(roomId) {
   const rooms = S().rooms;
+  if ((!roomId || !roomOf(roomId)) && rooms.length === 1) roomId = rooms[0].id;
   if (!roomId || !roomOf(roomId)) {
     app.innerHTML = shell("orvos", "Orvosi felület", `<div class="card"><h2 style="font-size:22px;margin-bottom:6px">Melyik rendelő?</h2><p class="muted" style="margin:0 0 16px">Ezt a választást érdemes könyvjelzőzni a rendelő gépén vagy tabletjén.</p><div class="room-pick">${rooms.map(r => `<a href="#orvos-${r.id}">${esc(r.name)}${r.doctor ? ` · <span class="muted">${esc(r.doctor)}</span>` : ""}</a>`).join("")}</div></div>`);
     on(null, route); return;
   }
   const room = roomOf(roomId);
   app.innerHTML = shell("orvos", room.name + (room.doctor ? " · " + room.doctor : ""), `
-    <div class="room-pick" style="margin-bottom:16px">${rooms.map(r => `<a href="#orvos-${r.id}" class="${r.id === roomId ? "on" : ""}">${esc(r.name)}</a>`).join("")}</div>
+    <div class="room-pick" style="margin-bottom:16px" ${rooms.length > 1 ? "" : "hidden"}>${rooms.map(r => `<a href="#orvos-${r.id}" class="${r.id === roomId ? "on" : ""}">${esc(r.name)}</a>`).join("")}</div>
     <div class="doc-layout">
       <section class="card now"><div class="eyebrow">Jelenleg behívva</div><div id="cur"></div>
         <div class="actions"><button class="btn primary" id="bNext">Következő beteg</button><button class="btn ghost" id="bRe">Újrahívás</button><button class="btn ghost" id="bSkip" title="A beteg nem jelent meg, jön a következő">Nem jelent meg</button></div>
         <div class="muted" style="font-size:13px" id="hint"></div></section>
-      <section class="card"><div class="eyebrow" style="margin-bottom:6px">Ide várakozók</div><div class="list" id="q"></div></section>
+      <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><div class="eyebrow">Várakozók</div><button class="btn small ghost" id="bAdd" title="Sorszám kiadása kézzel, pl. telefon nélküli betegnek">+ Új sorszám</button></div><div class="list" id="q"></div></section>
     </div>`);
   let busy = false;
   const act = async (fn, okMsg) => {
@@ -473,6 +475,7 @@ function viewDoctor(roomId) {
   };
   $("#bNext").onclick = () => act(() => callNext(roomId, false), r => r ? r.code + " behívva" : "Nincs várakozó beteg");
   $("#bSkip").onclick = () => act(() => callNext(roomId, true), r => r ? "Kihagyva, " + r.code + " behívva" : "Kihagyva, nincs több várakozó");
+  $("#bAdd").onclick = () => act(() => issueTicket("", rooms.length > 1 ? roomId : 0), r => r ? r.code + " kiadva" : "");
   $("#bRe").onclick = () => { const c = calledIn(Store.patients, roomId); if (c) act(() => recall(c), c.code + " újrahívva"); };
   function draw(list) {
     const c = calledIn(list, roomId), q = waitingFor(list, roomId);
@@ -481,7 +484,7 @@ function viewDoctor(roomId) {
     $("#bNext").textContent = c && !q.length ? "Kész, nincs több beteg" : "Következő beteg";
     $("#bRe").disabled = busy || !c; $("#bSkip").disabled = busy || !c;
     $("#hint").textContent = q.length ? `Következő: ${q[0].code}${q[0].initials ? " (" + q[0].initials + ")" : ""}` : "A sor üres.";
-    $("#q").innerHTML = q.length ? q.slice(0, 12).map(p => `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.initials || "–")}</b> · érkezett ${hhmm(p.createdAt)}${p.room ? "" : " · bármelyik rendelő"}</span><div class="row-actions"><button class="btn small ghost" data-call="${esc(p.id)}">Behívás</button></div></div>`).join("") : `<p class="muted" style="margin:8px 0 0">Jelenleg senki nem vár erre a rendelőre.</p>`;
+    $("#q").innerHTML = q.length ? q.slice(0, 12).map(p => `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.initials || "–")}</b> · érkezett ${hhmm(p.createdAt)}${p.room || rooms.length < 2 ? "" : " · bármelyik rendelő"}</span><div class="row-actions"><button class="btn small ghost" data-call="${esc(p.id)}">Behívás</button></div></div>`).join("") : `<p class="muted" style="margin:8px 0 0">Jelenleg senki nem vár erre a rendelőre.</p>`;
   }
   $("#q").onclick = e => { const id = e.target.closest("[data-call]")?.dataset.call; const p = id && Store.patients.find(x => x.id === id); if (p) act(() => callSpecific(p, roomId), p.code + " behívva"); };
   draw(Store.patients);
@@ -571,6 +574,7 @@ function viewSettings() {
       </section>
       <section class="card">
         <h2 style="font-size:20px;margin-bottom:8px">Kijelző és hang</h2>
+        <label class="check"><input type="checkbox" id="sr" ${s.showReception ? "checked" : ""}><span><b>Recepció nézet a menüben</b><br><span class="muted" style="font-size:13px">Akkor kapcsold be, ha lesz külön recepció.</span></span></label>
         <label class="check"><input type="checkbox" id="si" ${s.showInitials ? "checked" : ""}><span><b>Monogram a kijelzőn</b><br><span class="muted" style="font-size:13px">Kikapcsolva csak a sorszám látszik.</span></span></label>
         <label class="check"><input type="checkbox" id="sq" ${s.showQr ? "checked" : ""}><span><b>QR-kód a kijelzőn</b><br><span class="muted" style="font-size:13px">A betegek mobilról kérhetnek sorszámot.</span></span></label>
         <label class="check"><input type="checkbox" id="gg" ${s.gong ? "checked" : ""}><span><b>Gong hívásnál</b></span></label>
@@ -604,7 +608,7 @@ function viewSettings() {
   $("#save").onclick = async () => {
     s.clinicName = $("#cn").value.trim() || "Dr. Zsákai Zsolt"; s.clinicSub = $("#cs").value.trim();
     s.prefix = ($("#px").value.trim() || "A").toUpperCase();
-    s.showInitials = $("#si").checked; s.showQr = $("#sq").checked; s.gong = $("#gg").checked; s.speech = $("#sp").checked;
+    s.showInitials = $("#si").checked; s.showReception = $("#sr").checked; s.showQr = $("#sq").checked; s.gong = $("#gg").checked; s.speech = $("#sp").checked;
     s.rooms = s.rooms.map(r => ({id: r.id, name: r.name.trim() || r.id + "-es rendelő", doctor: (r.doctor || "").trim()}));
     try { await Store.saveSettings(s); toast("Beállítások mentve"); } catch (e) { console.warn(e); toast("Mentés nem sikerült."); }
   };
