@@ -65,7 +65,7 @@ export async function redis(...cmd) {
 }
 
 export const DEFAULT_SETTINGS = {
-  clinicName: "Dr. Zsákai Zsolt", clinicSub: "Ortopéd Sebészeti Magánrendelés", prefix: "A",
+  clinicName: "Dr. Zsákai Zsolt", clinicSub: "Ortopéd Sebészeti Magánrendelés", prefix: "ZS",
   rooms: [{ id: 1, name: "Rendelő", doctor: "" }], showReception: false, hoursFrom: "16:00", hoursTo: "20:00", icalUrl: "",
   showInitials: false, speech: true, gong: true, showQr: true, logo: ""
 };
@@ -119,6 +119,7 @@ export async function loadSettings(fresh = false) {
   const raw = await redis("GET", "bh:settings");
   const stored = raw ? JSON.parse(raw) : {};
   if (Array.isArray(stored.rooms) && stored.rooms.length === 2 && stored.rooms[0].name === "1-es rendelő" && stored.rooms[1].name === "2-es rendelő" && !stored.rooms[0].doctor && !stored.rooms[1].doctor) delete stored.rooms; // régi alapérték
+  if (!stored.zsPrefix) { if (!stored.prefix || stored.prefix === "A") stored.prefix = "ZS"; stored.zsPrefix = true; } // 2026-11-26: alap előtag ZS
   if (!stored.iniOff) { stored.showInitials = false; stored.iniOff = true; } // 2026-11-26: Zsolt kérése, monogram nem kell
   if (stored.clinicName === "Magánrendelő") { delete stored.clinicName; delete stored.clinicSub; } // régi alapérték
   if (stored.hoursTo === "19:30") stored.hoursTo = "20:00"; // régi alapérték (2026-11-26: rendelés 20:00-ig)
@@ -143,7 +144,7 @@ export async function withLock(fn) {
 }
 export function newPatient(list, settings, { initials, room, src }) {
   const num = list.reduce((m, p) => Math.max(m, p.num || 0), 0) + 1;
-  const prefix = String(settings.prefix || "A").toUpperCase().slice(0, 2);
+  const prefix = String(settings.prefix || "ZS").toUpperCase().slice(0, 2);
   const roomOk = settings.rooms.some(r => r.id === room);
   return { id: rid(10), k: rid(16), num, code: prefix + "-" + String(num).padStart(3, "0"),
     initials: String(initials || "").toUpperCase().replace(/[^\p{L}. ]/gu, "").trim().slice(0, 6),

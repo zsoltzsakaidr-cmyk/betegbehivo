@@ -88,7 +88,7 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 .doc-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
 @media (max-width:760px){.doc-layout{grid-template-columns:1fr}}
 .now{display:flex;flex-direction:column;gap:18px;padding:28px}
-.now .code{font-size:clamp(64px,12vw,112px);line-height:1;color:var(--ink)}
+.now .code{font-size:clamp(52px,8vw,100px);white-space:nowrap;line-height:1;color:var(--ink)}
 .now .empty{font-family:var(--display);font-size:22px;color:var(--muted);padding:26px 0}
 .actions{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
 .actions .btn{padding:18px 12px;font-size:16px}
@@ -151,7 +151,7 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 .tv-call{position:relative;border-radius:2vw;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--tv-line);
   display:flex;flex-direction:column;justify-content:center;padding:3vw 4vw;overflow:hidden;min-height:0}
 .tv-label{font-size:clamp(13px,1.4vw,28px);letter-spacing:.14em;text-transform:uppercase;color:var(--tv-sage);font-weight:600}
-.tv-code{font-family:var(--display);font-weight:800;font-size:clamp(80px,15vw,320px);line-height:.95;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:1vw 0 1.2vw}
+.tv-code{font-family:var(--display);font-weight:800;font-size:clamp(70px,11.5vw,260px);white-space:nowrap;line-height:.95;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:1vw 0 1.2vw}
 .tv-time{color:var(--tv-gold);font-weight:800;font-size:1.35em}
 .tv-initials{font-family:var(--display);font-size:clamp(18px,2.2vw,44px);color:var(--tv-muted);font-weight:600;margin-top:-.4vw;margin-bottom:1.2vw}
 .tv-room{display:flex;align-items:center;gap:1.2vw;font-size:clamp(20px,3vw,60px);font-family:var(--display);font-weight:700}
@@ -236,7 +236,7 @@ const ICON = {
 const DEFAULT_SETTINGS = {
   clinicName: "Dr. Zsákai Zsolt",
   clinicSub: "Ortopéd Sebészeti Magánrendelés",
-  prefix: "A",
+  prefix: "ZS",
   rooms: [{id:1, name:"Rendelő", doctor:""}],
   showReception: false,
   showInitials: false,
@@ -337,7 +337,7 @@ const Sound = (() => {
 })();
 function spoken(p) {
   const name = roomName(p.calledRoom);
-  const code = p.code.replace("-", " ").replace(/\b0+(\d)/, "$1");
+  const code = p.code.replace("-", " ").replace(/\b0+(\d)/, "$1").replace(/^ZS\b/i, "Zsé");
   const where = /rendelő$/i.test(name) ? "a " + (name === "Rendelő" ? "rendelő" : name) + "be" : name;
   if (p.time) { const [hh, mm] = p.time.split(":").map(Number); return `${code}. A ${mm ? hh + " óra " + mm + " perces" : hh + " órás"} időpontra érkezett beteget kérjük, fáradjon ${where}.`; }
   return `${code}. Kérjük, fáradjon ${where}.`;
@@ -642,7 +642,7 @@ function viewSettings() {
     img.onerror = () => toast("Ezt a képet nem sikerült beolvasni.");
     img.src = url;
   };
-  $("#test").onclick = () => { Sound.unlock(); if ($("#gg").checked) Sound.gong(); setTimeout(() => { if ($("#sp").checked) Sound.say(spoken({code: (s.prefix || "A") + "-012", calledRoom: s.rooms[0].id})); }, 1500); };
+  $("#test").onclick = () => { Sound.unlock(); if ($("#gg").checked) Sound.gong(); setTimeout(() => { if ($("#sp").checked) Sound.say(spoken({code: (s.prefix || "ZS") + "-012", calledRoom: s.rooms[0].id})); }, 1500); };
   $("#syncNow").onclick = async () => {
     $("#syncRes").textContent = "Mentés és beolvasás…";
     try { await $("#save").onclick(true); const r = await Store.act({ type: "sync" });
@@ -651,7 +651,7 @@ function viewSettings() {
   };
   $("#save").onclick = async (quiet) => {
     s.clinicName = $("#cn").value.trim() || "Dr. Zsákai Zsolt"; s.clinicSub = $("#cs").value.trim();
-    s.prefix = ($("#px").value.trim() || "A").toUpperCase();
+    s.prefix = ($("#px").value.trim() || "ZS").toUpperCase();
     s.showInitials = $("#si").checked; s.icalUrl = $("#ic").value.trim(); s.hoursFrom = /^\d{1,2}:\d{2}$/.test($("#hf").value.trim()) ? $("#hf").value.trim().padStart(5, "0") : "16:00"; s.hoursTo = /^\d{1,2}:\d{2}$/.test($("#ht").value.trim()) ? $("#ht").value.trim().padStart(5, "0") : "20:00"; s.showReception = $("#sr").checked; s.showQr = $("#sq").checked; s.gong = $("#gg").checked; s.speech = $("#sp").checked;
     s.rooms = s.rooms.map(r => ({id: r.id, name: r.name.trim() || r.id + "-es rendelő", doctor: (r.doctor || "").trim()}));
     try { await Store.saveSettings(s); if (quiet !== true) toast("Beállítások mentve"); } catch (e) { console.warn(e); toast("Mentés nem sikerült."); }

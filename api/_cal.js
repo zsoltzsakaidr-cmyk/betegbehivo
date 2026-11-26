@@ -65,7 +65,7 @@ export async function maybeSync(day, force = false) {
       const p = byUid.get(e.uid);
       if (p) { if (p.apptAt !== e.at || p.initials !== e.initials || p.name !== e.name) { p.apptAt = e.at; p.time = e.time; if (p.status === "waiting") { p.initials = e.initials; p.name = e.name; } changed = true; } continue; }
       const num = L.reduce((m, x) => Math.max(m, x.num || 0), 0) + 1;
-      const prefix = String(s.prefix || "A").toUpperCase().slice(0, 2);
+      const prefix = String(s.prefix || "ZS").toUpperCase().slice(0, 2);
       L.push({ id: rid(10), k: rid(16), num, code: prefix + "-" + String(num).padStart(3, "0"), initials: e.initials, name: e.name, room: 0, status: "waiting",
         createdAt: Date.now(), apptAt: e.at, time: e.time, calUid: e.uid, arrived: false, calledAt: 0, calledRoom: 0, calls: 0, src: "cal" });
       changed = true;
