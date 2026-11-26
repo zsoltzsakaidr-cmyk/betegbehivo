@@ -15,14 +15,6 @@ html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}
   --body:"Open Sans",ui-sans-serif,system-ui,sans-serif;
   --r:14px;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#17110d; --surface:#221a14; --line:#3a2d23; --fg:#f1e8dd; --muted:#b4a392;
-  --ink:#d9b98c; --sage:#c9a46c; --sage-soft:#33271d; --warn:#d9a35f; --warn-soft:#33281b;
-  --danger:#e08a80; --danger-soft:#3a2321; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#17110d; --surface:#221a14; --line:#3a2d23; --fg:#f1e8dd; --muted:#b4a392;
-  --ink:#d9b98c; --sage:#c9a46c; --sage-soft:#33271d; --warn:#d9a35f; --warn-soft:#33281b;
-  --danger:#e08a80; --danger-soft:#3a2321; color-scheme:dark}
 *{box-sizing:border-box}
 html,body{height:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -36,8 +28,6 @@ button{cursor:pointer}
 .brand img{height:40px;width:auto;max-width:160px;object-fit:contain}
 .brand img.lg{height:46px;max-width:none}.brand .lg-sub{border-left:1px solid var(--line);padding-left:12px}
 .lg-d{display:none}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lg-l{display:none}:root:not([data-theme="light"]) .lg-d{display:block}}
-:root[data-theme="dark"] .lg-l{display:none}:root[data-theme="dark"] .lg-d{display:block}
 .mark{width:40px;height:40px;border-radius:12px;background:var(--ink);display:grid;place-items:center;flex:none}
 .mark svg{width:22px;height:22px}
 .brand-name{font-family:var(--display);font-weight:700;font-size:18px}
@@ -238,6 +228,48 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 @keyframes kiNudge{0%,100%{translate:0 0}50%{translate:calc(cos(var(--a))*10px) calc(sin(var(--a))*10px)}}
 @media (prefers-reduced-motion:reduce){.ki-arrow svg{animation:none}}
 @media (max-width:700px){.ki-big{grid-template-columns:1fr;max-height:none}}
+/* Minden felület a váróterem kijelzőjének stílusában: homok háttér, ZS vízjel, áttetsző fejléc-sáv, fehér kártyák */
+body{background:#a68a6f}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+  linear-gradient(115deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 38%),
+  radial-gradient(1100px 700px at 10% 0%,#cbb8a3 0%,transparent 60%),
+  radial-gradient(900px 600px at 100% 100%,#8f735a 0%,transparent 60%),#a68a6f}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url(/mark-light.png) no-repeat right -4vw bottom -6vw / 46vw auto;opacity:.13}
+.wrap>.top{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.28);border-radius:18px;padding:12px 18px;backdrop-filter:blur(6px)}
+.wrap>.top .brand-sub,.wrap>.top .brand-name{color:#fff}.wrap>.top .lg-sub{border-left-color:rgba(255,255,255,.4)}
+.nav a{color:#f7f0e8}.nav a:hover{color:#fff;background:rgba(255,255,255,.18)}.nav a.on{background:#fff;color:#9a734a}
+.card,.tile{border:0;box-shadow:0 12px 32px rgba(70,48,28,.16)}
+.wrap>h1,.wrap>h2,.wrap>.hero-h,.wrap>.eyebrow,.wrap>p,.wrap>section>.eyebrow,.wrap>section>h1,.wrap>section>.hero-h{color:#fff}
+.wrap>p.muted,.wrap>section>p.muted{color:#f7f0e8}
+/* Bejelentkező tablet – a váróterem kijelzőjével azonos stílus: homok háttér, fehér kártyák, ZS vízjel */
+.ki{position:relative;overflow:hidden;color:#fff;background:
+  linear-gradient(115deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 38%),
+  radial-gradient(1100px 700px at 10% 0%,#cbb8a3 0%,transparent 60%),
+  radial-gradient(900px 600px at 100% 100%,#8f735a 0%,transparent 60%),#a68a6f}
+.ki::before{content:"";position:absolute;inset:0;background:url(/mark-light.png) no-repeat right -4vw bottom -6vw / 46vw auto;opacity:.13;pointer-events:none}
+.ki>*{position:relative;z-index:1}
+.ki-top{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.28);border-radius:22px;padding:14px 26px;backdrop-filter:blur(6px)}
+.ki-top img.ki-lg{height:clamp(40px,5vw,64px);width:auto;display:block}
+.ki-top .ki-lgwrap{display:flex;align-items:center;gap:18px}
+.ki-top .ki-lgsub{border-left:1px solid rgba(255,255,255,.4);padding-left:18px;font-size:clamp(14px,1.6vw,18px);color:#f7f0e8}
+.ki h1{color:#fff}
+.ki p.lead{color:#f7f0e8}
+.ki-btn{background:#fff;color:#9a734a;box-shadow:0 18px 44px rgba(70,48,28,.22);position:relative}
+.ki-btn::before{content:"";position:absolute;left:12%;top:0;width:22%;height:6px;background:#9a734a;border-radius:0 0 6px 6px}
+.ki-btn small{color:#8a7d72;opacity:1}
+.ki-btn.alt{background:rgba(74,56,40,.32);color:#fff;border:1px solid rgba(255,255,255,.3);box-shadow:none}
+.ki-btn.alt::before{display:none}.ki-btn.alt small{color:#f7f0e8}
+.ki-btn:active{transform:translateY(3px);box-shadow:0 8px 20px rgba(70,48,28,.22)}
+.ki-slot{background:#fff;border:0;color:#9a734a;box-shadow:0 10px 26px rgba(70,48,28,.18)}
+.ki-slot:active{transform:translateY(2px)}
+.ki-back{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff}
+.ki-done{background:#fff;color:#3a312a;border-radius:28px;box-shadow:0 18px 44px rgba(70,48,28,.22);padding:5vh 5vw;margin:0 auto;width:min(1000px,100%)}
+.ki-done h1{color:#3a312a}.ki-done p.lead{color:#8a7d72}
+.ki-done .num{color:#9a734a}
+.ki-done .ki-back{background:#f3ede6;border:2px solid #ebe4dc;color:#3a312a}
+.ki-wait{background:#f3ede6;border:2px solid #c3af9a;color:#3a312a}
+.ki-wait b{color:#9a734a}
+.ki-arrow{background:#9a734a}
 </style>
 
 </head><body>
@@ -380,7 +412,7 @@ function spoken(p) {
 /* ---------- közös fejléc ---------- */
 function brandHTML(sub) {
   const s = S();
-  if (!s.logo) return `<div class="brand"><img class="lg lg-l" src="/logo-brown.png" alt="${esc(s.clinicName)}"><img class="lg lg-d" src="/logo-gold.png" alt="${esc(s.clinicName)}">${sub ? `<div class="brand-sub lg-sub">${esc(sub)}</div>` : ""}</div>`;
+  if (!s.logo) return `<div class="brand"><img class="lg" src="/logo-light.png" alt="${esc(s.clinicName)}">${sub ? `<div class="brand-sub lg-sub">${esc(sub)}</div>` : ""}</div>`;
   const logo = `<img src="${esc(s.logo)}" alt="">`;
   return `<div class="brand">${logo}<div style="min-width:0"><div class="brand-name">${esc(s.clinicName)}</div><div class="brand-sub">${esc(sub)}</div></div></div>`;
 }
@@ -733,7 +765,7 @@ function viewNoDb() {
 function viewKiosk() {
   let screen = "home", timer = null, msg = null;
   const s = S();
-  const head = () => `<div class="ki-top">${brandHTML(s.clinicSub || "")}<button class="ki-back" id="kFs" style="font-size:16px;padding:10px 16px">Teljes képernyő</button></div>`;
+  const head = () => `<div class="ki-top">${s.logo ? brandHTML(s.clinicSub || "") : `<div class="ki-lgwrap"><img class="ki-lg" src="/logo-light.png" alt="${esc(s.clinicName)}">${s.clinicSub ? `<div class="ki-lgsub">${esc(s.clinicSub)}</div>` : ""}</div>`}<button class="ki-back" id="kFs" style="font-size:16px;padding:10px 16px">Teljes képernyő</button></div>`;
   const back = () => { screen = "home"; draw(); };
   const ANG = { right: 0, downright: 45, down: 90, downleft: 135, left: 180, upleft: -135, up: -90, upright: -45 };
   const toWait = () => { const dir = S().kioskArrow || "right", left = /left/.test(dir);

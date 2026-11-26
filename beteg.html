@@ -5,11 +5,10 @@
 <style>
 :root{--bg:#fafafa;--surface:#ffffff;--line:#ebe4dc;--fg:#3a312a;--muted:#8a7d72;--ink:#9a734a;--sage:#a88b6e;--sage-soft:#f3ede6;--warn:#b5762a;--warn-soft:#f7eddf;
   --display:"Montserrat",ui-sans-serif,system-ui,sans-serif;--body:"Open Sans",ui-sans-serif,system-ui,sans-serif}
-@media (prefers-color-scheme:dark){:root{--bg:#17110d;--surface:#221a14;--line:#3a2d23;--fg:#f1e8dd;--muted:#b4a392;--ink:#d9b98c;--sage:#c9a46c;--sage-soft:#33271d;--warn:#d9a35f;--warn-soft:#33281b;color-scheme:dark}}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
 .wrap{max-width:460px;margin:0 auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(32px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:18px;min-height:100vh}
-.brand{display:flex;align-items:center;gap:12px}.brand img{height:38px;max-width:160px;object-fit:contain}.brand img.lg{height:44px;max-width:none}.lg-d{display:none}@media (prefers-color-scheme:dark){.lg-l{display:none}.lg-d{display:block}}
+.brand{display:flex;align-items:center;gap:12px}.brand img{height:38px;max-width:160px;object-fit:contain}.brand img.lg{height:44px;max-width:none}.lg-d{display:none}
 .mark{width:38px;height:38px;border-radius:11px;background:#9a734a;display:grid;place-items:center}.mark svg{width:21px;height:21px}
 .bs{font-size:13px;color:var(--muted)}
 .bn{font-family:var(--display);font-weight:700;font-size:18px}
@@ -33,6 +32,22 @@ input,select{font:inherit;color:inherit;width:100%;background:var(--bg);border:1
 .slot:active{transform:scale(.98)}.slot:disabled{opacity:.5}
 .link{font:inherit;background:none;border:0;color:var(--ink);text-decoration:underline;padding:4px 0;cursor:pointer;text-align:left}
 .note{background:var(--warn-soft);border-radius:12px;padding:12px 14px;font-size:14px}
+/* a váróterem kijelzőjének stílusa: homok háttér, ZS vízjel, fehér kártyák */
+body{background:#a68a6f}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+  linear-gradient(115deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 38%),
+  radial-gradient(700px 500px at 10% 0%,#cbb8a3 0%,transparent 60%),
+  radial-gradient(600px 500px at 100% 100%,#8f735a 0%,transparent 60%),#a68a6f}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url(/mark-light.png) no-repeat right -18vw bottom -10vw / 90vw auto;opacity:.13}
+.brand{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.28);border-radius:16px;padding:10px 14px;backdrop-filter:blur(6px)}
+.wrap>.bs{color:#f7f0e8}
+.wrap>.bn,.wrap>h1{color:#fff}
+.card{border:0;box-shadow:0 12px 32px rgba(70,48,28,.18);position:relative}
+.card::before{content:"";position:absolute;left:24px;top:0;width:56px;height:4px;background:#9a734a;border-radius:0 0 4px 4px}
+.called::before{background:#fff}
+.slot{background:#fff;border:1px solid #ebe4dc;box-shadow:0 4px 12px rgba(70,48,28,.08)}.slot b{color:#9a734a}
+.wrap>.link{color:#fff}
+.note{background:#f3ede6}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style></head><body>
 <div class="wrap" id="app"><p class="muted">Betöltés…</p></div>
@@ -46,7 +61,7 @@ const CROSS = '<svg viewBox="0 0 24 24"><path d="M9.5 3.5h5v6h6v5h-6v6h-5v-6h-6v
 const t = new URLSearchParams(location.search).get("t") || "";
 const app = $("#app");
 let info = null;
-const brand = () => info && !info.logo ? `<div class="brand"><img class="lg lg-l" src="/logo-brown.png" alt="${esc(info.clinicName)}"><img class="lg lg-d" src="/logo-gold.png" alt="${esc(info.clinicName)}"></div>${info.clinicSub ? `<div class="bs" style="margin:-6px 0 4px">${esc(info.clinicSub)}</div>` : ""}` : `<div class="brand">${info && info.logo ? `<img src="${esc(info.logo)}" alt="">` : `<div class="mark">${CROSS}</div>`}<div><div class="bn">${esc(info ? info.clinicName : "")}</div>${info && info.clinicSub ? `<div class="bs">${esc(info.clinicSub)}</div>` : ""}</div></div>`;
+const brand = () => info && !info.logo ? `<div class="brand"><img class="lg" src="/logo-light.png" alt="${esc(info.clinicName)}"></div>${info.clinicSub ? `<div class="bs" style="margin:-6px 0 4px">${esc(info.clinicSub)}</div>` : ""}` : `<div class="brand">${info && info.logo ? `<img src="${esc(info.logo)}" alt="">` : `<div class="mark">${CROSS}</div>`}<div><div class="bn">${esc(info ? info.clinicName : "")}</div>${info && info.clinicSub ? `<div class="bs">${esc(info.clinicSub)}</div>` : ""}</div></div>`;
 
 async function start() {
   try { info = await (await fetch("/api/checkin?t=" + encodeURIComponent(t))).json(); } catch { info = null; }
