@@ -1,7 +1,10 @@
 <!doctype html>
 <html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex">
 <title>Betegbehívó</title>
-<link rel="manifest" href="/tablet.webmanifest">
+<script>/* a kezdőképernyőre tett alkalmazás: az ajtónál lévő tablet vagy a váró-kijelző */
+(function(){var q=location.search,h=location.hash,f=/tablet=1/.test(q)||h==="#bejelentkezes"?"tablet":/kijelzo=1/.test(q)||h==="#kijelzo"?"kijelzo":"";
+if(f){var l=document.createElement("link");l.rel="manifest";l.href="/"+f+".webmanifest";document.head.appendChild(l);}if(/kijelzo=1|tablet=1/.test(q))document.documentElement.className+=" app-lock";})();</script>
+<style>.app-lock .tv-exit{display:none!important}</style>
 <meta name="theme-color" content="#a68a6f">
 <link rel="icon" href="/icon-192.png">
 <script src="/qrcode.js"></script>
@@ -842,7 +845,8 @@ function viewKiosk() {
 function route() {
   cleanup.forEach(f => { try { f(); } catch {} }); cleanup = [];
   const h = location.hash.replace("#", "");
-  if (/[?&]tablet=1/.test(location.search) && h !== "bejelentkezes") { location.hash = "bejelentkezes"; return; } // a kezdőképernyőről indított tablet-alkalmazás csak a bejelentkező oldalt mutatja
+  if (/[?&]tablet=1/.test(location.search) && h !== "bejelentkezes") { location.hash = "bejelentkezes"; return; }
+  if (/[?&]kijelzo=1/.test(location.search) && h !== "kijelzo") { location.hash = "kijelzo"; return; } // a kezdőképernyőről indított váró-kijelző csak a kijelzőt mutatja // a kezdőképernyőről indított tablet-alkalmazás csak a bejelentkező oldalt mutatja
   if (h === "kilepes") { history.replaceState(null, "", location.pathname); return Store.logout(); }
   if (Store.mode === "login") return viewLogin();
   if (Store.mode === "setup") return viewSetup();
