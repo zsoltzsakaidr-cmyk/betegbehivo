@@ -17,10 +17,10 @@ export default async function handler(req, res) {
     } else if (a.type === "settings") {
       const s = a.settings || {};
       if (typeof s.logo === "string" && s.logo.length > 400000) return send(res, 400, { error: "logo" });
-      const old = String((await loadSettings(true)).prefix || "ZS").toUpperCase().slice(0, 2);
       await saveSettings(s);
       const nw = String(s.prefix || "ZS").toUpperCase().slice(0, 2);
-      if (nw !== old) await withLock(async () => { // a mai sorszámok is az új előtagot kapják
+      const cur = await loadDay(day, true);
+      if (cur.patients.some(p => !String(p.code).startsWith(nw + "-"))) await withLock(async () => { // a mai sorszámok is az aktuális előtagot kapják
         const d = await loadDay(day, true);
         for (const p of d.patients) p.code = nw + "-" + String(p.num).padStart(3, "0");
         await saveDay(day, d);
