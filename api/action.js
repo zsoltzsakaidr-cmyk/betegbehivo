@@ -34,10 +34,15 @@ export default async function handler(req, res) {
         if (a.type === "issue") {
           const p = newPatient(L, settings, { initials: a.initials, room: +a.room || 0, src: "rec" });
           L.push(p); result = strip(p);
-        } else if (a.type === "next" || a.type === "skip") {
+        } else if (a.type === "skip") { // nem jelent meg: csak megjelöljük, a következőt az orvos hívja, amikor akarja
+          const cur = calledIn(L, +a.room);
+          if (cur) { cur.status = "missed"; cur.doneAt = now; result = strip(cur); }
+        } else if (a.type === "reset") { // a nap újrakezdése: minden mai sorszám törlődik, a számozás elölről indul
+          L.splice(0, L.length);
+        } else if (a.type === "next") {
           const room = +a.room;
           const cur = calledIn(L, room);
-          if (cur) { cur.status = a.type === "skip" ? "missed" : "done"; cur.doneAt = now; }
+          if (cur) { cur.status = "done"; cur.doneAt = now; }
           const nx = waitingFor(L, room)[0]; // szigorúan időpont szerint
           if (nx) { nx.status = "called"; nx.calledRoom = room; nx.calledAt = now; nx.calls = 1; result = strip(nx); }
         } else if (a.type === "recall") {

@@ -92,6 +92,7 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 .list{display:flex;flex-direction:column}
 .row{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
 .row:first-child{border-top:0}
+.row.past{opacity:.55}
 .row .code{font-size:20px}
 .row .meta{min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.row .meta b{display:block;font-size:15px;white-space:normal;line-height:1.25}
 .row .meta b{color:var(--fg);font-weight:600}
@@ -569,9 +570,10 @@ function viewDoctor(roomId) {
     <div class="room-pick" style="margin-bottom:16px" ${rooms.length > 1 ? "" : "hidden"}>${rooms.map(r => `<a href="#orvos-${r.id}" class="${r.id === roomId ? "on" : ""}">${esc(r.name)}</a>`).join("")}</div>
     <div class="doc-layout">
       <section class="card now"><div class="eyebrow">Jelenleg behívva</div><div id="cur"></div>
-        <div class="actions"><button class="btn primary" id="bNext">Következő beteg</button><button class="btn ghost" id="bRe">Újrahívás</button><button class="btn ghost" id="bSkip" title="A beteg nem jelent meg, jön a következő">Nem jelent meg</button></div>
+        <div class="actions"><button class="btn primary" id="bNext">Következő beteg</button><button class="btn ghost" id="bRe">Újrahívás</button><button class="btn ghost" id="bSkip" title="A beteg nem jelent meg. Később újra behívható a listából.">Nem jelent meg</button></div>
         <div class="muted" style="font-size:13px" id="hint"></div></section>
-      <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><div class="eyebrow">Várakozók</div><button class="btn small ghost" id="bAdd" title="Sorszám kiadása kézzel, pl. telefon nélküli betegnek">+ Új sorszám</button></div><div class="list" id="q"></div><p class="muted" id="syncNote" style="font-size:12px;margin:8px 0 0;color:var(--warn)"></p></section>
+      <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><div class="eyebrow">Mai betegek</div><button class="btn small ghost" id="bAdd" title="Sorszám kiadása kézzel, pl. telefon nélküli betegnek">+ Új sorszám</button></div><div class="list" id="q"></div><p class="muted" id="syncNote" style="font-size:12px;margin:8px 0 0;color:var(--warn)"></p>
+        <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="muted" style="font-size:12px">Teszteléshez vagy hiba esetén: minden mai sorszám törlődik, a számozás elölről indul.</span><button class="btn small ghost" id="bReset">Nap újrakezdése</button></div></section>
     </div>`);
   let busy = false;
   const act = async (fn, okMsg) => {
@@ -581,7 +583,12 @@ function viewDoctor(roomId) {
     busy = false; draw(Store.patients);
   };
   $("#bNext").onclick = () => act(() => callNext(roomId, false), r => r ? r.code + " behívva" : "Nincs várakozó beteg");
-  $("#bSkip").onclick = () => act(() => callNext(roomId, true), r => r ? "Kihagyva, " + r.code + " behívva" : "Kihagyva, nincs több várakozó");
+  $("#bSkip").onclick = () => act(() => callNext(roomId, true), r => r ? r.code + " nem jelent meg, később újra behívható" : "");
+  let resetArm = 0;
+  $("#bReset").onclick = () => {
+    if (Date.now() - resetArm > 4000) { resetArm = Date.now(); $("#bReset").textContent = "Biztos? Kattints újra"; setTimeout(() => { if ($("#bReset")) $("#bReset").textContent = "Nap újrakezdése"; }, 4000); return; }
+    resetArm = 0; $("#bReset").textContent = "Nap újrakezdése"; act(() => Store.act({ type: "reset" }), "A nap újraindult, a számozás elölről kezdődik");
+  };
   $("#bAdd").onclick = () => act(() => issueTicket("", rooms.length > 1 ? roomId : 0), r => r ? r.code + " kiadva" : "");
   $("#bRe").onclick = () => { const c = calledIn(Store.patients, roomId); if (c) act(() => recall(c), c.code + " újrahívva"); };
   function draw(list) {
@@ -592,7 +599,9 @@ function viewDoctor(roomId) {
     $("#bRe").disabled = busy || !c; $("#bSkip").disabled = busy || !c;
     const nx = q[0];
     $("#hint").textContent = nx ? `Következő: ${nx.code}${nx.name || nx.initials ? " (" + (nx.name || nx.initials) + ")" : ""}${nx.time ? " · " + nx.time : ""}${nx.arrived === false ? " · még nem jelezte, hogy megérkezett" : ""}` : "A sor üres.";
-    $("#q").innerHTML = q.length ? q.slice(0, 30).map(p => `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.name || p.initials || (p.time ? "Időpontra érkezett" : "Időpont nélkül"))}</b>${p.time ? "időpont " + esc(p.time) : "érkezett " + hhmm(p.createdAt)}${p.room || rooms.length < 2 ? "" : " · bármelyik rendelő"}</span><div class="row-actions">${p.arrived === false ? `<button class="btn small ghost" data-arr="${esc(p.id)}" title="Kattints rá, ha a beteg megérkezett">Még nincs itt</button>` : p.src === "cal" && !p.slot ? `<button class="pill waiting" style="border:0;cursor:pointer" data-arr="${esc(p.id)}" title="Visszavonás">Megérkezett</button>` : ""}<button class="btn small ghost" data-call="${esc(p.id)}">Behívás</button></div></div>`).join("") : `<p class="muted" style="margin:8px 0 0">Jelenleg senki nem vár.</p>`;
+    const all = list.filter(p => !p.room || p.room === roomId || p.calledRoom === roomId).sort(byNum); // az egész nap: a behívott és kész betegek is látszanak
+    const SL = { called: "Behívva", done: "Kész", missed: "Nem jelent meg" };
+    $("#q").innerHTML = all.length ? all.map(p => `<div class="row${p.status === "done" || p.status === "missed" ? " past" : ""}"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.name || p.initials || (p.time ? "Időpontra érkezett" : "Időpont nélkül"))}</b>${p.time ? "időpont " + esc(p.time) : "érkezett " + hhmm(p.createdAt)}${p.room || rooms.length < 2 ? "" : " · bármelyik rendelő"}</span><div class="row-actions">${p.status !== "waiting" ? "" : p.arrived === false ? `<button class="btn small ghost" data-arr="${esc(p.id)}" title="Kattints rá, ha a beteg megérkezett">Még nincs itt</button>` : p.src === "cal" && !p.slot ? `<button class="pill waiting" style="border:0;cursor:pointer" data-arr="${esc(p.id)}" title="Visszavonás">Megérkezett</button>` : ""}${p.status !== "waiting" ? `<span class="pill ${p.status}">${SL[p.status] || ""}</span>` : ""}${p.status === "called" && p.calledRoom === roomId ? "" : `<button class="btn small ghost" data-call="${esc(p.id)}">${p.status === "waiting" ? "Behívás" : "Újra behív"}</button>`}</div></div>`).join("") : `<p class="muted" style="margin:8px 0 0">Ma még nincs beteg.</p>`;
     $("#syncNote").textContent = Store.syncErr ? "A naptárat most nem sikerült kiolvasni, a lista a legutóbbi állapotot mutatja." : "";
   }
   $("#q").onclick = e => { const ar = e.target.closest("[data-arr]")?.dataset.arr; if (ar) return act(() => Store.act({ type: "arrive", id: ar }));
