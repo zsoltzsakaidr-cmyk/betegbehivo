@@ -1,1 +1,1 @@
-{ "headers": [ { "source": "/api/(.*)", "headers": [ { "key": "Cache-Control", "value": "no-store" } ] } ] }
+{ "regions": ["fra1"], "headers": [ { "source": "/api/(.*)", "headers": [ { "key": "Cache-Control", "value": "no-store" } ] } ] }
