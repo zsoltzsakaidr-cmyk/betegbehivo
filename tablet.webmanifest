@@ -1,0 +1,24 @@
+{
+ "name": "Betegbehívó – Bejelentkezés",
+ "short_name": "Bejelentkezés",
+ "start_url": "/?tablet=1#bejelentkezes",
+ "scope": "/",
+ "display": "fullscreen",
+ "orientation": "any",
+ "background_color": "#a68a6f",
+ "theme_color": "#a68a6f",
+ "icons": [
+  {
+   "src": "/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any maskable"
+  },
+  {
+   "src": "/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
