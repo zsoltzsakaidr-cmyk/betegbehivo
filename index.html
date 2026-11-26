@@ -9,7 +9,7 @@ html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 /* Layout: egy oldal, négy nézet (#kijelzo, #orvos-N, #recepcio, #beallitasok). Nyugodt mélykék + zsálya. */
 :root{
   --bg:#f6f8f7; --surface:#ffffff; --line:#e2e8e5; --fg:#16252e; --muted:#5d6f78;
-  --ink:#1c3a4b; --sage:#5f8a76; --sage-soft:#e6efea; --warn:#b5762a; --warn-soft:#f7eddf;
+  --ink:#12363e; --sage:#5f8a76; --sage-soft:#e6efea; --warn:#b5762a; --warn-soft:#f7eddf;
   --danger:#a8463d; --danger-soft:#f6e4e2;
   --display:"Manrope",ui-sans-serif,system-ui,sans-serif;
   --body:"Inter",ui-sans-serif,system-ui,sans-serif;
@@ -34,6 +34,10 @@ button{cursor:pointer}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:28px}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
 .brand img{height:40px;width:auto;max-width:160px;object-fit:contain}
+.brand img.lg{height:46px;max-width:none}.brand .lg-sub{border-left:1px solid var(--line);padding-left:12px}
+.lg-d{display:none}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lg-l{display:none}:root:not([data-theme="light"]) .lg-d{display:block}}
+:root[data-theme="dark"] .lg-l{display:none}:root[data-theme="dark"] .lg-d{display:block}
 .mark{width:40px;height:40px;border-radius:12px;background:var(--ink);display:grid;place-items:center;flex:none}
 .mark svg{width:22px;height:22px}
 .brand-name{font-family:var(--display);font-weight:700;font-size:18px}
@@ -128,14 +132,15 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 .logo-prev img{max-height:48px;max-width:100%}
 
 /* ===== Váró-kijelző (TV): saját, mindig sötét megjelenés ===== */
-.tv{--tv-bg:#0e2230;--tv-bg2:#123041;--tv-fg:#f3f7f5;--tv-muted:#94aeb9;--tv-sage:#8fc2a8;--tv-line:rgba(255,255,255,.09);
-  position:fixed;inset:0;background:radial-gradient(1200px 700px at 15% 0%,#17405a 0%,transparent 60%),radial-gradient(900px 600px at 100% 100%,#16392f 0%,transparent 60%),var(--tv-bg);
+.tv{--tv-bg:#0f2f37;--tv-bg2:#12363e;--tv-gold:#c49d66;--tv-fg:#f3f7f5;--tv-muted:#94aeb9;--tv-sage:#8fc2a8;--tv-line:rgba(255,255,255,.09);
+  position:fixed;inset:0;background:radial-gradient(1200px 700px at 15% 0%,#17454f 0%,transparent 60%),radial-gradient(900px 600px at 100% 100%,#163a35 0%,transparent 60%),var(--tv-bg);
   color:var(--tv-fg);display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;font-family:var(--body);color-scheme:dark;
   padding:calc(env(safe-area-inset-top,0px) + 2.2vw) max(2.6vw,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 1.6vw) max(2.6vw,env(safe-area-inset-left,0px))}
 .tv-top{display:flex;justify-content:space-between;align-items:center;gap:2vw}
 .tv-brand{display:flex;align-items:center;gap:1.2vw;min-width:0}
 .tv-brand img{height:4.2vw;min-height:36px;max-width:22vw;object-fit:contain}
 .tv-brand .mark{width:4.2vw;height:4.2vw;min-width:36px;min-height:36px;border-radius:1vw;background:rgba(255,255,255,.08)}
+.tv-brand img.tv-lg{height:5.2vw;min-height:44px;max-width:none}.tv-lgsub{border-left:1px solid var(--tv-line);padding-left:1.2vw;margin:0!important}
 .tv-brand .s{color:var(--tv-muted);font-size:clamp(12px,1.15vw,24px);margin-top:.2vw}
 .tv-brand .n{font-family:var(--display);font-weight:700;font-size:clamp(18px,2vw,40px)}
 .tv-clock{text-align:right}
@@ -147,7 +152,7 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
   display:flex;flex-direction:column;justify-content:center;padding:3vw 4vw;overflow:hidden;min-height:0}
 .tv-label{font-size:clamp(13px,1.4vw,28px);letter-spacing:.14em;text-transform:uppercase;color:var(--tv-sage);font-weight:600}
 .tv-code{font-family:var(--display);font-weight:800;font-size:clamp(80px,15vw,320px);line-height:.95;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:1vw 0 1.2vw}
-.tv-time{color:var(--tv-fg);font-weight:800;font-size:1.35em}
+.tv-time{color:var(--tv-gold);font-weight:800;font-size:1.35em}
 .tv-initials{font-family:var(--display);font-size:clamp(18px,2.2vw,44px);color:var(--tv-muted);font-weight:600;margin-top:-.4vw;margin-bottom:1.2vw}
 .tv-room{display:flex;align-items:center;gap:1.2vw;font-size:clamp(20px,3vw,60px);font-family:var(--display);font-weight:700}
 .tv-room .arrow{width:clamp(26px,3.2vw,64px);height:clamp(26px,3.2vw,64px);border-radius:50%;background:var(--tv-sage);color:#0e2230;display:grid;place-items:center;flex:none}
@@ -341,7 +346,8 @@ function spoken(p) {
 /* ---------- közös fejléc ---------- */
 function brandHTML(sub) {
   const s = S();
-  const logo = s.logo ? `<img src="${esc(s.logo)}" alt="">` : `<div class="mark">${ICON.cross}</div>`;
+  if (!s.logo) return `<div class="brand"><img class="lg lg-l" src="/logo-teal.png" alt="${esc(s.clinicName)}"><img class="lg lg-d" src="/logo-gold.png" alt="${esc(s.clinicName)}">${sub ? `<div class="brand-sub lg-sub">${esc(sub)}</div>` : ""}</div>`;
+  const logo = `<img src="${esc(s.logo)}" alt="">`;
   return `<div class="brand">${logo}<div style="min-width:0"><div class="brand-name">${esc(s.clinicName)}</div><div class="brand-sub">${esc(sub)}</div></div></div>`;
 }
 function shell(active, sub, inner) {
@@ -416,7 +422,7 @@ function viewDisplay() {
   const seen = new Map(); let primed = false, lastShownKey = "";
   function brand() {
     const s = S();
-    $("#tvBrand").innerHTML = (s.logo ? `<img src="${esc(s.logo)}" alt="">` : `<div class="mark">${ICON.cross}</div>`) + `<div><div class="n">${esc(s.clinicName)}</div>${s.clinicSub ? `<div class="s">${esc(s.clinicSub)}</div>` : ""}</div>`;
+    $("#tvBrand").innerHTML = !s.logo ? `<img class="tv-lg" src="/logo-gold.png" alt="${esc(s.clinicName)}">${s.clinicSub ? `<div class="s tv-lgsub">${esc(s.clinicSub)}</div>` : ""}` : (s.logo ? `<img src="${esc(s.logo)}" alt="">` : `<div class="mark">${ICON.cross}</div>`) + `<div><div class="n">${esc(s.clinicName)}</div>${s.clinicSub ? `<div class="s">${esc(s.clinicSub)}</div>` : ""}</div>`;
   }
   function render(list, announce) {
     const s = S();
@@ -655,7 +661,7 @@ function viewSettings() {
 /* Belépés */
 function viewLogin() {
   app.innerHTML = `<div class="wrap" style="max-width:420px;padding-top:12vh"><div class="card grid">
-    <div class="mark">${ICON.cross}</div>
+    <img src="/logo-teal.png" alt="Dr. Zsákai Zsolt" class="lg-l" style="height:52px;width:auto;align-self:flex-start"><img src="/logo-gold.png" alt="" class="lg-d" style="height:52px;width:auto;align-self:flex-start">
     <h1 style="font-size:24px">Betegbehívó</h1>
     <p class="muted" style="margin:0">Add meg a rendelő PIN-kódját. Ezen a gépen megjegyezzük, nem kell minden nap beírni.</p>
     <form id="lf" class="grid"><div class="field"><label for="pin">PIN-kód</label><input type="text" id="pin" inputmode="numeric" autocomplete="off" style="font-size:22px;letter-spacing:.3em"></div>
@@ -665,7 +671,7 @@ function viewLogin() {
 }
 function viewSetup() {
   app.innerHTML = `<div class="wrap" style="max-width:460px;padding-top:10vh"><div class="card grid">
-    <div class="mark">${ICON.cross}</div>
+    <img src="/logo-teal.png" alt="Dr. Zsákai Zsolt" class="lg-l" style="height:52px;width:auto;align-self:flex-start"><img src="/logo-gold.png" alt="" class="lg-d" style="height:52px;width:auto;align-self:flex-start">
     <h1 style="font-size:24px">Üdvözlünk! Állíts be egy PIN-kódot</h1>
     <p class="muted" style="margin:0">Ezzel léptek be a váró-kijelzőn, az orvosi gépen és a recepción. A betegeknek nem kell, ők a QR-kódot használják. 4–8 számjegy legyen.</p>
     <form id="sf" class="grid"><div class="field"><label for="np">Új PIN-kód</label><input type="text" id="np" inputmode="numeric" autocomplete="off" maxlength="8" style="font-size:22px;letter-spacing:.3em"></div>
