@@ -67,7 +67,7 @@ export async function redis(...cmd) {
 export const DEFAULT_SETTINGS = {
   clinicName: "Dr. Zsákai Zsolt", clinicSub: "Ortopéd Sebészeti Magánrendelés", prefix: "ZS",
   rooms: [{ id: 1, name: "Rendelő", doctor: "" }], showReception: false, hoursFrom: "16:00", hoursTo: "20:00", icalUrl: "",
-  showInitials: false, speech: true, gong: true, showQr: true, logo: ""
+  showInitials: false, speech: true, gong: true, showQr: true, logo: "", kioskArrow: "right"
 };
 
 export function today() {

@@ -111,6 +111,7 @@ async function status(tk) {
     let body;
     if (s.status === "waiting") body = `<div class="card"><div class="eyebrow">Az Ön sorszáma</div><div class="code">${esc(s.code)}</div>
       ${s.time ? `<div class="muted">Időpont: <b style="color:var(--fg)">${esc(s.time)}</b></div>` : ""}<div class="ahead"><b>${s.ahead}</b><span class="muted">${s.ahead ? "beteg vár Ön előtt" : "Ön következik"}</span></div>
+      <p class="note" style="margin:0;background:var(--sage-soft)"><b>Kérjük, fáradjon be a váróterembe, és foglaljon helyet.</b></p>
       <p class="muted small" style="margin:0">Tartsa nyitva ezt az oldalt. Amikor behívják, itt és a váróterem kijelzőjén is megjelenik.</p></div>`;
     else if (s.status === "called") body = `<div class="card called" role="alert"><div class="eyebrow">Önt hívják</div><div class="code">${esc(s.code)}</div>
       <div class="room">${esc(s.roomName || "Kérjük, fáradjon be")}</div>${s.doctor ? `<div class="muted">${esc(s.doctor)}</div>` : ""}</div>`;
