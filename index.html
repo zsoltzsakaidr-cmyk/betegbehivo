@@ -637,7 +637,8 @@ function viewSetup() {
   };
 }
 function viewNoDb() {
-  app.innerHTML = `<div class="wrap" style="max-width:560px;padding-top:12vh"><div class="card grid"><h1 style="font-size:22px">Az adatbázis még nincs bekötve</h1><p class="muted" style="margin:0">Az alkalmazás fut, de még nincs hova mentenie a sort. Ha a tárhelyen bekötötted az adatbázist, frissítsd az oldalt.</p><button class="btn primary" onclick="location.reload()">Újrapróbálás</button></div></div>`;
+  fetch("/api/health").then(r => r.json()).then(j => { const el = $("#dbdiag"); if (el) el.textContent = "Talált beállítások: " + (j.keys.length ? j.keys.join(", ") : "nincs") + (j.ping ? " · " + j.ping : ""); }).catch(() => {});
+  app.innerHTML = `<div class="wrap" style="max-width:560px;padding-top:12vh"><div class="card grid"><h1 style="font-size:22px">Az adatbázis még nincs bekötve</h1><p class="muted" style="margin:0">Az alkalmazás fut, de még nincs hova mentenie a sort. Ha a tárhelyen bekötötted az adatbázist, frissítsd az oldalt.</p><button class="btn primary" onclick="location.reload()">Újrapróbálás</button><p class="muted" id="dbdiag" style="margin:0;font-size:12px"></p></div></div>`;
 }
 
 /* ---------- útválasztás ---------- */
