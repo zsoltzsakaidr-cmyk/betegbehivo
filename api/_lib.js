@@ -22,6 +22,7 @@ if (!REST_URL && tcpKey) {
 export const hasDb = () => !!((REST_URL && REST_TOKEN) || TCP);
 export const dbInfo = () => ({ mode: REST_URL ? "rest" : TCP ? "tcp" : "none",
   keys: Object.keys(env).filter(k => /REDIS|KV_|UPSTASH/.test(k)).sort() });
+export const dbHost = () => { try { return REST_URL ? new URL(REST_URL).hostname : TCP ? TCP.host : null; } catch { return null; } };
 
 /* minimális RESP-kliens a sima redis:// kapcsolathoz */
 let sock = null, buf = Buffer.alloc(0), waiters = [];
