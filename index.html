@@ -147,6 +147,7 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
   display:flex;flex-direction:column;justify-content:center;padding:3vw 4vw;overflow:hidden;min-height:0}
 .tv-label{font-size:clamp(13px,1.4vw,28px);letter-spacing:.14em;text-transform:uppercase;color:var(--tv-sage);font-weight:600}
 .tv-code{font-family:var(--display);font-weight:800;font-size:clamp(80px,15vw,320px);line-height:.95;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:1vw 0 1.2vw}
+.tv-time{color:var(--tv-fg);font-weight:800;font-size:1.35em}
 .tv-initials{font-family:var(--display);font-size:clamp(18px,2.2vw,44px);color:var(--tv-muted);font-weight:600;margin-top:-.4vw;margin-bottom:1.2vw}
 .tv-room{display:flex;align-items:center;gap:1.2vw;font-size:clamp(20px,3vw,60px);font-family:var(--display);font-weight:700}
 .tv-room .arrow{width:clamp(26px,3.2vw,64px);height:clamp(26px,3.2vw,64px);border-radius:50%;background:var(--tv-sage);color:#0e2230;display:grid;place-items:center;flex:none}
@@ -315,6 +316,7 @@ function spoken(p) {
   const name = roomName(p.calledRoom);
   const code = p.code.replace("-", " ").replace(/\b0+(\d)/, "$1");
   const where = /rendelő$/i.test(name) ? "a " + (name === "Rendelő" ? "rendelő" : name) + "be" : name;
+  if (p.time) { const [hh, mm] = p.time.split(":").map(Number); return `${code}. A ${mm ? hh + " óra " + mm + " perces" : hh + " órás"} időpontra érkezett beteget kérjük, fáradjon ${where}.`; }
   return `${code}. Kérjük, fáradjon ${where}.`;
 }
 
@@ -410,7 +412,7 @@ function viewDisplay() {
         const room = roomOf(hero.calledRoom);
         box.innerHTML = `<div class="enter"><div class="tv-label">Behívjuk</div>
           <div class="tv-code">${esc(hero.code)}</div>
-          ${s.showInitials && hero.initials ? `<div class="tv-initials">${esc(hero.initials)}</div>` : ""}
+          ${hero.time || (s.showInitials && hero.initials) ? `<div class="tv-initials">${hero.time ? `<span class="tv-time">${esc(hero.time)}</span>-as időpont` : ""}${hero.time && s.showInitials && hero.initials ? " · " : ""}${s.showInitials && hero.initials ? esc(hero.initials) : ""}</div>` : ""}
           <div class="tv-room"><span class="arrow">${ICON.arrow}</span><div>${esc(roomName(hero.calledRoom))}${room && room.doctor ? `<small>${esc(room.doctor)}</small>` : ""}</div></div></div>`;
       } else {
         box.innerHTML = `<div class="enter tv-idle"><div class="tv-label">Üdvözöljük</div><h2>Kérjük, foglaljon helyet.</h2><p>Hamarosan behívjuk. Sorszáma itt fog megjelenni.</p></div>`;
@@ -418,7 +420,7 @@ function viewDisplay() {
     }
     if (announce && hero) { box.classList.remove("flash"); void box.offsetWidth; box.classList.add("flash"); }
     const hist = called.filter(p => p !== hero).slice(0, S().showQr ? 3 : 5);
-    $("#tvHist").innerHTML = hist.length ? hist.map(p => `<div class="it"><span class="c">${esc(p.code)}</span><span class="r">${esc(roomName(p.calledRoom))}<br>${hhmm(p.calledAt)}</span></div>`).join("") : `<div class="none">Még nem volt hívás ma.</div>`;
+    $("#tvHist").innerHTML = hist.length ? hist.map(p => `<div class="it"><span class="c">${esc(p.code)}</span><span class="r">${p.time ? esc(p.time) + "-as időpont" : esc(roomName(p.calledRoom))}<br>hívva ${hhmm(p.calledAt)}</span></div>`).join("") : `<div class="none">Még nem volt hívás ma.</div>`;
     const w = list.filter(p => p.status === "waiting").length;
     $("#tvWait").innerHTML = `Várakozik: <b>${w}</b>`;
   }
@@ -484,7 +486,7 @@ function viewDoctor(roomId) {
     $("#bNext").disabled = busy || !q.length && !c;
     $("#bNext").textContent = c && !q.length ? "Kész, nincs több beteg" : "Következő beteg";
     $("#bRe").disabled = busy || !c; $("#bSkip").disabled = busy || !c;
-    const nx = q.find(p => p.arrived !== false) || q[0];
+    const nx = q[0];
     $("#hint").textContent = nx ? `Következő: ${nx.code}${nx.initials ? " (" + nx.initials + ")" : ""}${nx.time ? " · " + nx.time : ""}${nx.arrived === false ? " · még nem jelezte, hogy megérkezett" : ""}` : "A sor üres.";
     $("#q").innerHTML = q.length ? q.slice(0, 30).map(p => `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.initials || "–")}</b> · ${p.time ? "időpont " + esc(p.time) : "érkezett " + hhmm(p.createdAt)}${p.room || rooms.length < 2 ? "" : " · bármelyik rendelő"}</span><div class="row-actions">${p.arrived === false ? `<button class="btn small ghost" data-arr="${esc(p.id)}" title="Kattints rá, ha a beteg megérkezett">Még nincs itt</button>` : p.src === "cal" ? `<button class="pill waiting" style="border:0;cursor:pointer" data-arr="${esc(p.id)}" title="Visszavonás">Megérkezett</button>` : ""}<button class="btn small ghost" data-call="${esc(p.id)}">Behívás</button></div></div>`).join("") : `<p class="muted" style="margin:8px 0 0">Jelenleg senki nem vár.${S().icalUrl ? "" : " A naptár még nincs összekötve (Beállítások)."}</p>`;
     $("#syncNote").textContent = Store.syncErr ? "A naptárat most nem sikerült kiolvasni, a lista a legutóbbi állapotot mutatja." : "";

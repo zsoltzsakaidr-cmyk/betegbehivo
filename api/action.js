@@ -31,7 +31,7 @@ export default async function handler(req, res) {
           const room = +a.room;
           const cur = calledIn(L, room);
           if (cur) { cur.status = a.type === "skip" ? "missed" : "done"; cur.doneAt = now; }
-          const q = waitingFor(L, room); const nx = q.find(p => p.arrived !== false) || q[0];
+          const nx = waitingFor(L, room)[0]; // szigorúan időpont szerint
           if (nx) { nx.status = "called"; nx.calledRoom = room; nx.calledAt = now; nx.calls = 1; result = strip(nx); }
         } else if (a.type === "recall") {
           const p = find(a.id); if (p && p.status === "called") { p.calledAt = now; p.calls = (p.calls || 1) + 1; result = strip(p); }
