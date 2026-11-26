@@ -18,6 +18,10 @@ function parseDt(prop, val) {
   const at = guess.getTime() - (((off % 86400000) + 86400000 + 43200000) % 86400000 - 43200000);
   return { day: `${Y}-${Mo}-${D}`, time: `${h}:${mi}`, at };
 }
+export function nameOf(summary) {
+  const segs = String(summary || "").split(/\s[-–—]\s/);
+  return (segs.length > 1 ? segs[segs.length - 1] : segs[0]).split(/,|\(|\//)[0].replace(/\s+/g, " ").trim().slice(0, 60);
+}
 export function initialsOf(summary) {
   const segs = String(summary || "").split(/\s[-–—]\s/);
   let name = (segs.length > 1 ? segs[segs.length - 1] : segs[0]).split(/,|\(|\//)[0];
@@ -39,7 +43,7 @@ export function eventsForDay(ics, day, from = "16:00", to = "20:00") {
     if (/szabads|távol|pihen/i.test(sum)) continue;
     if (!/\s[-–—]\s/.test(sum)) continue;               // csak „Vizsgálat – Név” formájú bejegyzés
     if (st.time < from || st.time > to) continue;      // csak rendelési időben
-    out.push({ uid: (uid + rec).slice(0, 200), time: st.time, at: st.at, initials: initialsOf(sum) });
+    out.push({ uid: (uid + rec).slice(0, 200), time: st.time, at: st.at, initials: initialsOf(sum), name: nameOf(sum) });
   }
   return out.sort((a, b) => a.at - b.at);
 }
@@ -59,10 +63,10 @@ export async function maybeSync(day, force = false) {
     for (const e of evs) {
       seen.add(e.uid);
       const p = byUid.get(e.uid);
-      if (p) { if (p.apptAt !== e.at || p.initials !== e.initials) { p.apptAt = e.at; p.time = e.time; if (p.status === "waiting") p.initials = e.initials; changed = true; } continue; }
+      if (p) { if (p.apptAt !== e.at || p.initials !== e.initials || p.name !== e.name) { p.apptAt = e.at; p.time = e.time; if (p.status === "waiting") { p.initials = e.initials; p.name = e.name; } changed = true; } continue; }
       const num = L.reduce((m, x) => Math.max(m, x.num || 0), 0) + 1;
       const prefix = String(s.prefix || "A").toUpperCase().slice(0, 2);
-      L.push({ id: rid(10), k: rid(16), num, code: prefix + "-" + String(num).padStart(3, "0"), initials: e.initials, room: 0, status: "waiting",
+      L.push({ id: rid(10), k: rid(16), num, code: prefix + "-" + String(num).padStart(3, "0"), initials: e.initials, name: e.name, room: 0, status: "waiting",
         createdAt: Date.now(), apptAt: e.at, time: e.time, calUid: e.uid, arrived: false, calledAt: 0, calledRoom: 0, calls: 0, src: "cal" });
       changed = true;
     }

@@ -97,7 +97,7 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 .row{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
 .row:first-child{border-top:0}
 .row .code{font-size:20px}
-.row .meta{min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .meta{min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.row .meta b{display:block;font-size:15px;white-space:normal;line-height:1.25}
 .row .meta b{color:var(--fg);font-weight:600}
 .row-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .room-pick{display:flex;gap:8px;flex-wrap:wrap}
@@ -507,13 +507,13 @@ function viewDoctor(roomId) {
   $("#bRe").onclick = () => { const c = calledIn(Store.patients, roomId); if (c) act(() => recall(c), c.code + " újrahívva"); };
   function draw(list) {
     const c = calledIn(list, roomId), q = waitingFor(list, roomId);
-    $("#cur").innerHTML = c ? `<div class="code">${esc(c.code)}</div><div class="muted" style="margin-top:8px">${c.initials ? "<b style=\"color:var(--fg)\">" + esc(c.initials) + "</b> · " : ""}behívva ${hhmm(c.calledAt)}${c.calls > 1 ? ` · ${c.calls}. hívás` : ""}</div>` : `<div class="empty">Nincs behívott beteg.</div>`;
+    $("#cur").innerHTML = c ? `<div class="code">${esc(c.code)}</div><div class="muted" style="margin-top:8px">${c.name || c.initials ? "<b style=\"color:var(--fg)\">" + esc(c.name || c.initials) + "</b> · " : ""}${c.time ? esc(c.time) + " · " : ""}behívva ${hhmm(c.calledAt)}${c.calls > 1 ? ` · ${c.calls}. hívás` : ""}</div>` : `<div class="empty">Nincs behívott beteg.</div>`;
     $("#bNext").disabled = busy || !q.length && !c;
     $("#bNext").textContent = c && !q.length ? "Kész, nincs több beteg" : "Következő beteg";
     $("#bRe").disabled = busy || !c; $("#bSkip").disabled = busy || !c;
     const nx = q[0];
-    $("#hint").textContent = nx ? `Következő: ${nx.code}${nx.initials ? " (" + nx.initials + ")" : ""}${nx.time ? " · " + nx.time : ""}${nx.arrived === false ? " · még nem jelezte, hogy megérkezett" : ""}` : "A sor üres.";
-    $("#q").innerHTML = q.length ? q.slice(0, 30).map(p => `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.initials || "–")}</b> · ${p.time ? "időpont " + esc(p.time) : "érkezett " + hhmm(p.createdAt)}${p.room || rooms.length < 2 ? "" : " · bármelyik rendelő"}</span><div class="row-actions">${p.arrived === false ? `<button class="btn small ghost" data-arr="${esc(p.id)}" title="Kattints rá, ha a beteg megérkezett">Még nincs itt</button>` : p.src === "cal" ? `<button class="pill waiting" style="border:0;cursor:pointer" data-arr="${esc(p.id)}" title="Visszavonás">Megérkezett</button>` : ""}<button class="btn small ghost" data-call="${esc(p.id)}">Behívás</button></div></div>`).join("") : `<p class="muted" style="margin:8px 0 0">Jelenleg senki nem vár.${S().icalUrl ? "" : " A naptár még nincs összekötve (Beállítások)."}</p>`;
+    $("#hint").textContent = nx ? `Következő: ${nx.code}${nx.name || nx.initials ? " (" + (nx.name || nx.initials) + ")" : ""}${nx.time ? " · " + nx.time : ""}${nx.arrived === false ? " · még nem jelezte, hogy megérkezett" : ""}` : "A sor üres.";
+    $("#q").innerHTML = q.length ? q.slice(0, 30).map(p => `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.name || p.initials || "Időpont nélkül")}</b>${p.time ? "időpont " + esc(p.time) : "érkezett " + hhmm(p.createdAt)}${p.room || rooms.length < 2 ? "" : " · bármelyik rendelő"}</span><div class="row-actions">${p.arrived === false ? `<button class="btn small ghost" data-arr="${esc(p.id)}" title="Kattints rá, ha a beteg megérkezett">Még nincs itt</button>` : p.src === "cal" ? `<button class="pill waiting" style="border:0;cursor:pointer" data-arr="${esc(p.id)}" title="Visszavonás">Megérkezett</button>` : ""}<button class="btn small ghost" data-call="${esc(p.id)}">Behívás</button></div></div>`).join("") : `<p class="muted" style="margin:8px 0 0">Jelenleg senki nem vár.${S().icalUrl ? "" : " A naptár még nincs összekötve (Beállítások)."}</p>`;
     $("#syncNote").textContent = Store.syncErr ? "A naptárat most nem sikerült kiolvasni, a lista a legutóbbi állapotot mutatja." : "";
   }
   $("#q").onclick = e => { const ar = e.target.closest("[data-arr]")?.dataset.arr; if (ar) return act(() => Store.act({ type: "arrive", id: ar }));
@@ -567,7 +567,7 @@ function viewReception() {
       const where = p.status === "called" || p.status === "done" ? roomName(p.calledRoom) : (p.room ? roomName(p.room) : "Bármelyik");
       const acts = p.status === "missed" ? `<button class="btn small ghost" data-a="back" data-id="${esc(p.id)}">Vissza a sorba</button>`
         : p.status === "waiting" ? `<button class="btn small ghost" data-a="del" data-id="${esc(p.id)}">Törlés</button>` : "";
-      return `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.initials || "–")}</b> · ${esc(where)} · ${hhmm(p.createdAt)}${p.src === "qr" ? " · mobilról" : ""}</span><div class="row-actions"><span class="pill ${p.status}">${LBL[p.status]}</span>${acts}</div></div>`;
+      return `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.name || p.initials || "Időpont nélkül")}</b>${esc(where)} · ${hhmm(p.createdAt)}${p.src === "qr" ? " · mobilról" : ""}</span><div class="row-actions"><span class="pill ${p.status}">${LBL[p.status]}</span>${acts}</div></div>`;
     }).join("") : `<p class="muted" style="margin:8px 0 0">${tab === "active" ? "Most senki nem vár. Az első érkező sorszámát bal oldalt tudod kiadni." : "Ma még nem volt beteg."}</p>`;
   }
   const pendingDel = new Set();
@@ -600,7 +600,7 @@ function viewSettings() {
       </section>
       <section class="card grid">
         <h2 style="font-size:20px">Google Naptár</h2>
-        <p class="muted" style="margin:0;font-size:14px">A rendelési idő alatti, „Vizsgálat – Név” formájú bejegyzésekből a rendszer automatikusan sorszámot ad. Csak az időpontot és a monogramot veszi át.</p>
+        <p class="muted" style="margin:0;font-size:14px">A rendelési idő alatti, „Vizsgálat – Név” formájú bejegyzésekből a rendszer automatikusan sorszámot ad. Az időpontot és a beteg nevét veszi át. A név csak az orvosi képernyőn látszik, a betegek felé soha, és a nap végén törlődik.</p>
         <div class="field"><label for="ic">A naptár titkos iCal-címe</label><input type="text" id="ic" value="${esc(s.icalUrl || "")}" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics" autocomplete="off"></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap"><div class="field" style="flex:1;min-width:120px"><label for="hf">Rendelés kezdete</label><input type="text" id="hf" value="${esc(s.hoursFrom || "16:00")}"></div><div class="field" style="flex:1;min-width:120px"><label for="ht">Rendelés vége</label><input type="text" id="ht" value="${esc(s.hoursTo || "20:00")}"></div></div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn small ghost" type="button" id="syncNow">Naptár beolvasása most</button><span class="muted" id="syncRes" style="font-size:13px"></span></div>
