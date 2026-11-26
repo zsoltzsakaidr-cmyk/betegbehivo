@@ -204,6 +204,13 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 .tv-qr b{color:#9a734a}.tv-qr span{color:#8a7d72}
 .tv-foot{border-top:0;background:rgba(74,56,40,.32);border-radius:1.2vw;padding:1vw 1.8vw;color:#fff}
 .tv-foot .wait b{color:#fff}
+/* nagyobb QR-kód: tableten és távolról is jól beolvasható */
+.tv-qr{padding:1.2vw 1.4vw}
+.tv-qr .qr{width:clamp(150px,min(19vw,32vh),460px);min-width:0;padding:max(.6vw,8px)}
+.tv-qr b{font-size:clamp(17px,1.7vw,34px)}
+.tv-qr span{font-size:clamp(13px,1.15vw,23px)}
+.tv-hist .it:nth-child(n+4){display:none}
+@media (max-aspect-ratio:1/1){.tv-side{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr;column-gap:2.4vw}.tv-side h3{grid-column:1}.tv-hist{grid-column:1;grid-row:2}.tv-qr{grid-column:2;grid-row:1/span 2;margin-top:0;flex-direction:column;text-align:center;max-width:46vw}.tv-qr .qr{width:clamp(150px,min(38vw,24vh),460px)}}
 
 /* Bejelentkező tablet (#bejelentkezes) */
 .ki{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;padding:4vh 5vw;gap:3vh;color:var(--fg)}
