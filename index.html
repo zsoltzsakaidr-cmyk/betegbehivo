@@ -188,6 +188,33 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 .tv:hover .tv-exit,.tv-exit:focus{opacity:1}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+/* TV – weboldal stílus: fehér hívókártya, világos fejléc-sáv, ZS vízjel, bronz kiemelések */
+.tv{background:
+  linear-gradient(115deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 38%),
+  radial-gradient(1100px 700px at 10% 0%,#cbb8a3 0%,transparent 60%),
+  radial-gradient(900px 600px at 100% 100%,#8f735a 0%,transparent 60%),var(--tv-bg)}
+.tv::before{content:"";position:absolute;inset:0;background:url(/mark-light.png) no-repeat right -4vw bottom -6vw / 46vw auto;opacity:.13;pointer-events:none}
+.tv>.tv-top,.tv>.tv-main,.tv>.tv-foot{position:relative;z-index:1}
+.tv-top{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.28);border-radius:1.4vw;padding:1vw 1.8vw;backdrop-filter:blur(6px)}
+.tv-call{background:#fff;color:#3a312a;border:0;box-shadow:0 1.6vw 4vw rgba(70,48,28,.22)}
+.tv-call::before{content:"";position:absolute;left:4vw;top:0;width:7vw;height:.45vw;background:#9a734a;border-radius:0 0 .4vw .4vw}
+.tv-call .tv-label{color:#9a734a}
+.tv-call .tv-code{color:#9a734a}
+.tv-call .tv-initials{color:#8a7d72}
+.tv-call .tv-time{color:#3a312a}
+.tv-call .tv-room{color:#3a312a}
+.tv-call .tv-room .arrow{background:#9a734a;color:#fff}
+.tv-call .tv-room small{color:#8a7d72}
+.tv-call .tv-idle h2{color:#3a312a}.tv-call .tv-idle p{color:#8a7d72}
+@keyframes flash{0%,100%{box-shadow:0 1.6vw 4vw rgba(70,48,28,.22)}40%{box-shadow:0 0 0 .7vw rgba(255,255,255,.75),0 1.6vw 4vw rgba(70,48,28,.3)}}
+.tv-side h3{color:#fff}
+.tv-hist .it{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3)}
+.tv-hist .it:first-child{background:rgba(255,255,255,.34)}
+.tv-qr{background:#fff;color:#3a312a;border:0;box-shadow:0 1vw 2.6vw rgba(70,48,28,.18)}
+.tv-qr b{color:#9a734a}.tv-qr span{color:#8a7d72}
+.tv-foot{border-top:0;background:rgba(74,56,40,.32);border-radius:1.2vw;padding:1vw 1.8vw;color:#fff}
+.tv-foot .wait b{color:#fff}
+
 /* Bejelentkező tablet (#bejelentkezes) */
 .ki{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;padding:4vh 5vw;gap:3vh;color:var(--fg)}
 .ki-top{display:flex;justify-content:space-between;align-items:center}
