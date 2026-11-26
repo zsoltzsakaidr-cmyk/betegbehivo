@@ -182,6 +182,24 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 .tv-exit{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));opacity:0;transition:opacity .3s;z-index:5;font-size:12px;color:#94aeb9;text-decoration:none;background:rgba(255,255,255,.06);padding:6px 10px;border-radius:8px}
 .tv:hover .tv-exit,.tv-exit:focus{opacity:1}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Bejelentkező tablet (#bejelentkezes) */
+.ki{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;padding:4vh 5vw;gap:3vh;color:var(--fg)}
+.ki-top{display:flex;justify-content:space-between;align-items:center}
+.ki h1{font-family:var(--display);font-weight:800;font-size:clamp(30px,5vw,52px);line-height:1.1;margin:0;color:var(--ink)}
+.ki p.lead{font-size:clamp(18px,2.4vw,26px);color:var(--muted);margin:0}
+.ki-big{display:grid;grid-template-columns:1fr 1fr;gap:3vw;flex:1;max-height:52vh}
+.ki-btn{border:0;border-radius:24px;font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,44px);line-height:1.15;padding:4vh 3vw;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1.5vh;text-align:center;color:#fff;background:var(--ink);box-shadow:0 6px 0 rgba(0,0,0,.18)}
+.ki-btn small{font-family:var(--body);font-weight:500;font-size:clamp(15px,1.8vw,21px);opacity:.85}
+.ki-btn.alt{background:var(--sage)}
+.ki-btn:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.ki-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;align-content:start}
+.ki-slot{border:2px solid var(--line);background:var(--surface);border-radius:18px;padding:22px 12px;font-family:var(--display);font-weight:800;font-size:40px;color:var(--fg);cursor:pointer}
+.ki-slot span{display:block;font-family:var(--body);font-weight:600;font-size:20px;color:var(--muted);margin-top:4px}
+.ki-back{align-self:flex-start;border:2px solid var(--line);background:var(--surface);color:var(--fg);border-radius:14px;padding:14px 26px;font-size:22px;font-weight:600;cursor:pointer}
+.ki-done{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2vh}
+.ki-done .num{font-family:var(--display);font-weight:800;font-size:clamp(90px,18vw,200px);line-height:1;color:var(--ink)}
+@media (max-width:700px){.ki-big{grid-template-columns:1fr;max-height:none}}
 </style>
 
 </head><body>
@@ -347,6 +365,7 @@ function viewHome() {
     <div class="tiles">
       <a class="tile" href="#kijelzo"><div class="ico">${ICON.tv}</div><h3>Váró-kijelző</h3><p class="muted" style="margin:0">Teljes képernyős nézet a TV-re. Gong és magyar bemondás hívásnál, csak sorszám és monogram látszik.</p></a>
       <div class="tile"><div class="ico">${ICON.doc}</div><h3>Orvosi felület</h3><p class="muted" style="margin:0">Következő, Újrahívás, Nem jelent meg${S().rooms.length > 1 ? ". Válaszd ki a rendelőt:" : ", és kézzel is adhatsz ki sorszámot."}</p>${S().rooms.length > 1 ? `<div class="links">${rooms}</div>` : `<div class="links"><a href="#orvos-${S().rooms[0].id}">Megnyitás</a></div>`}</div>
+      <a class="tile" href="#bejelentkezes"><div class="ico">${ICON.desk}</div><h3>Bejelentkező tablet</h3><p class="muted" style="margin:0">Az ajtónál, telefon nélküli betegeknek: időpontra érkezés jelzése vagy sorszám kérése két nagy gombbal.</p></a>
       <a class="tile" href="#recepcio" ${S().showReception ? "" : "hidden"}><div class="ico">${ICON.desk}</div><h3>Recepció</h3><p class="muted" style="margin:0">Érkező beteg rögzítése, sorszám kiadása, a napi sor áttekintése.</p></a>
     </div>
     <div class="steps">
@@ -667,6 +686,62 @@ function viewNoDb() {
   app.innerHTML = `<div class="wrap" style="max-width:560px;padding-top:12vh"><div class="card grid"><h1 style="font-size:22px">Az adatbázis még nincs bekötve</h1><p class="muted" style="margin:0">Az alkalmazás fut, de még nincs hova mentenie a sort. Ha a tárhelyen bekötötted az adatbázist, frissítsd az oldalt.</p><button class="btn primary" onclick="location.reload()">Újrapróbálás</button><p class="muted" id="dbdiag" style="margin:0;font-size:12px"></p></div></div>`;
 }
 
+
+/* Bejelentkező tablet az ajtónál: telefon nélküli betegeknek */
+function viewKiosk() {
+  let screen = "home", timer = null, msg = null;
+  const s = S();
+  const head = () => `<div class="ki-top">${brandHTML(s.clinicSub || "")}<button class="ki-back" id="kFs" style="font-size:16px;padding:10px 16px">Teljes képernyő</button></div>`;
+  const back = () => { screen = "home"; draw(); };
+  const later = (ms) => { clearTimeout(timer); timer = setTimeout(back, ms); };
+  const open = () => Store.patients.filter(p => p.src === "cal" && p.arrived === false && p.status === "waiting").sort((a, b) => (a.apptAt || 0) - (b.apptAt || 0));
+  function draw() {
+    let body = "";
+    if (screen === "home") {
+      clearTimeout(timer);
+      body = `<div><h1>Jó napot kívánunk!</h1><p class="lead">Kérjük, jelezze, hogy megérkezett.</p></div>
+        <div class="ki-big"><button class="ki-btn" data-go="appt">Időpontra jöttem<small>Válassza ki az időpontját</small></button><button class="ki-btn alt" data-go="walk">Időpont nélkül jöttem<small>Sorszámot kap</small></button></div>`;
+    } else if (screen === "appt") {
+      later(45000);
+      const L = open();
+      body = `<button class="ki-back" data-go="home">‹ Vissza</button><div><h1>Melyik az Ön időpontja?</h1><p class="lead">Érintse meg a saját időpontját.</p></div>
+        ${L.length ? `<div class="ki-slots">${L.map(p => `<button class="ki-slot" data-arr="${esc(p.id)}">${esc(p.time || "")}${s.showInitials && p.initials ? `<span>${esc(p.initials)}</span>` : ""}</button>`).join("")}</div>` : `<p class="lead">Nincs több mai időpont a listában. Kérjük, válassza az „Időpont nélkül jöttem” lehetőséget, vagy szóljon az orvosnak.</p>`}`;
+    } else if (screen === "walk") {
+      later(30000);
+      body = `<button class="ki-back" data-go="home">‹ Vissza</button><div class="ki-done"><h1>Sorszámot kér?</h1><p class="lead">Ha előre egyeztetett időpontja van, lépjen vissza, és válassza az „Időpontra jöttem” gombot.</p>
+        <button class="ki-btn alt" data-go="issue" style="max-width:520px;width:100%;margin-top:2vh">Igen, kérek sorszámot</button></div>`;
+    } else if (screen === "done") {
+      later(20000);
+      body = `<div class="ki-done">${msg}<button class="ki-back" data-go="home" style="align-self:center;margin-top:3vh">Rendben</button></div>`;
+    }
+    app.innerHTML = `<div class="ki">${head()}${body}</div>`;
+  }
+  let busy = false;
+  app.onclick = async e => {
+    if (e.target.closest("#kFs")) { try { await document.documentElement.requestFullscreen?.(); } catch {} return; }
+    const go = e.target.closest("[data-go]")?.dataset.go, ar = e.target.closest("[data-arr]")?.dataset.arr;
+    if (busy || (!go && !ar)) return;
+    if (go === "issue") {
+      busy = true;
+      try { const r = await issueTicket("", 0); msg = `<p class="lead">Az Ön sorszáma:</p><div class="num">${esc(r.code)}</div><p class="lead" style="max-width:30ch">Kérjük, jegyezze meg, és figyelje a váróterem kijelzőjét. Szólítjuk, amikor Ön következik.</p>`; screen = "done"; }
+      catch { msg = `<h1>Most nem sikerült</h1><p class="lead">Kérjük, próbálja újra, vagy szóljon az orvosnak.</p>`; screen = "done"; }
+      busy = false; return draw();
+    }
+    if (ar) {
+      const p = Store.patients.find(x => x.id === ar);
+      if (!p || p.arrived !== false) return back();
+      busy = true;
+      try { await Store.act({ type: "arrive", id: ar }); msg = `<h1>Köszönjük, megérkezését rögzítettük.</h1><p class="lead">Az Ön időpontja:</p><div class="num">${esc(p.time || "")}</div><p class="lead" style="max-width:32ch">Kérjük, foglaljon helyet, és figyelje a kijelzőt. Amikor ez az időpont megjelenik, fáradjon a rendelőbe.</p>`; screen = "done"; }
+      catch { msg = `<h1>Most nem sikerült</h1><p class="lead">Kérjük, próbálja újra, vagy szóljon az orvosnak.</p>`; screen = "done"; }
+      busy = false; return draw();
+    }
+    screen = go; draw();
+  };
+  draw();
+  on(() => { if (screen === "appt" && !busy) draw(); }, route);
+  cleanup.push(() => { clearTimeout(timer); app.onclick = null; });
+}
+
 /* ---------- útválasztás ---------- */
 function route() {
   cleanup.forEach(f => { try { f(); } catch {} }); cleanup = [];
@@ -677,6 +752,7 @@ function route() {
   if (Store.mode === "nodb") return viewNoDb();
   if (Store.mode === "connecting") { app.innerHTML = `<div class="wrap"><p class="muted">Kapcsolódás…</p></div>`; return; }
   if (h === "kijelzo") return viewDisplay();
+  if (h === "bejelentkezes") return viewKiosk();
   if (h === "recepcio") return viewReception();
   if (h === "beallitasok") return viewSettings();
   if (h === "orvos" || h.startsWith("orvos-")) return viewDoctor(+h.split("-")[1] || 0);
