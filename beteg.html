@@ -53,8 +53,8 @@ async function start() {
   const saved = get("bh-ticket");
   const todayStr = new Intl.DateTimeFormat("en-CA", {timeZone: "Europe/Budapest"}).format(new Date());
   if (saved && saved.day === todayStr) return status(saved);
-  if (!info || info.error) return app.innerHTML = `<div class="card"><h1>A szolgáltatás most nem érhető el</h1><p class="muted">Kérjük, jelentkezzen a recepción.</p></div>`;
-  if (!info.valid) return app.innerHTML = brand() + `<div class="card"><h1>Ez a QR-kód lejárt</h1><p class="muted">A kód minden nap megújul. Kérjük, olvassa be a váróterem kijelzőjén látható friss kódot, vagy jelentkezzen a recepción.</p></div>`;
+  if (!info || info.error) return app.innerHTML = `<div class="card"><h1>A szolgáltatás most nem érhető el</h1><p class="muted">Kérjük, szóljon a rendelőben.</p></div>`;
+  if (!info.valid) return app.innerHTML = brand() + `<div class="card"><h1>Ez a QR-kód lejárt</h1><p class="muted">A kód minden nap megújul. Kérjük, olvassa be a váróterem kijelzőjén látható friss kódot, vagy szóljon a rendelőben.</p></div>`;
   if (info.appointments && info.appointments.length) return pick(); else form();
 }
 function pick() {
@@ -96,7 +96,7 @@ function form() {
       if (!r.ok) throw new Error(j.error);
       put("bh-ticket", j); status(j);
     } catch (err) {
-      const m = {rate: "Erről a telefonról már több sorszámot kértek. Kérjük, jelentkezzen a recepción.", token: "A QR-kód lejárt, kérjük, olvassa be újra a kijelzőről."}[err.message] || "Nem sikerült a sorszámot kiadni. Kérjük, próbálja újra, vagy jelentkezzen a recepción.";
+      const m = {rate: "Erről a telefonról már több sorszámot kértek. Kérjük, szóljon a rendelőben.", token: "A QR-kód lejárt, kérjük, olvassa be újra a kijelzőről."}[err.message] || "Nem sikerült a sorszámot kiadni. Kérjük, próbálja újra, vagy szóljon a rendelőben.";
       $("#err").hidden = false; $("#err").textContent = m; b.disabled = false;
     }
   };
@@ -114,9 +114,10 @@ async function status(tk) {
       <p class="muted small" style="margin:0">Tartsa nyitva ezt az oldalt. Amikor behívják, itt és a váróterem kijelzőjén is megjelenik.</p></div>`;
     else if (s.status === "called") body = `<div class="card called" role="alert"><div class="eyebrow">Önt hívják</div><div class="code">${esc(s.code)}</div>
       <div class="room">${esc(s.roomName || "Kérjük, fáradjon be")}</div>${s.doctor ? `<div class="muted">${esc(s.doctor)}</div>` : ""}</div>`;
-    else if (s.status === "missed") body = `<div class="card"><div class="eyebrow">${esc(s.code)}</div><h1>Lekéste a hívást</h1><p class="muted" style="margin:0">Kérjük, jelentkezzen a recepción, és visszatesszük a sorba.</p></div>`;
+    else if (s.status === "missed") body = `<div class="card"><div class="eyebrow">${esc(s.code)}</div><h1>Lekéste a hívást</h1><p class="muted" style="margin:0">Kérjük, szóljon a rendelőben, és visszatesszük a sorba.</p></div>`;
     else body = `<div class="card"><div class="eyebrow">${esc(s.code)}</div><h1>Köszönjük a látogatást!</h1><p class="muted" style="margin:0">Jó egészséget kívánunk.</p></div>`;
-    app.innerHTML = brand() + body;
+    app.innerHTML = brand() + body + (s.status === "called" ? "" : `<button class="link" id="other" style="align-self:center;font-size:14px">Másik beteget jelentenék be ezzel a telefonnal</button>`);
+    const o = document.getElementById("other"); if (o) o.onclick = () => { clearTimeout(timer); put("bh-ticket", null); start(); };
     if (s.status === "called" && s.calledAt !== lastCall) { lastCall = s.calledAt; try { navigator.vibrate && navigator.vibrate([400, 200, 400, 200, 400]); } catch {} }
     if (s.status === "done") return;
   }
