@@ -159,3 +159,31 @@ export async function body(req) {
   if (req.body && typeof req.body === "object") return req.body;
   let d = ""; for await (const ch of req) d += ch; try { return JSON.parse(d || "{}"); } catch { return {}; }
 }
+
+/* Naptár nélküli mód: a rendelési idő 15 perces időpontjai, a beteg maga választja ki (név nélkül) */
+export function slotTimes(s) {
+  const toM = t => { const [h, m] = String(t).split(":").map(Number); return h * 60 + m; };
+  const out = [];
+  for (let m = toM(s.hoursFrom || "16:00"); m + 15 <= toM(s.hoursTo || "20:00"); m += 15) out.push(String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"));
+  return out;
+}
+export function budapestAt(day, time) {
+  const [Y, Mo, D] = day.split("-").map(Number), [h, mi] = time.split(":").map(Number);
+  const guess = Date.UTC(Y, Mo - 1, D, h, mi);
+  const f = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Budapest", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  const [hh, mm] = f.format(new Date(guess)).split(":").map(Number);
+  let diff = (hh * 60 + mm) - (h * 60 + mi); if (diff < -720) diff += 1440; if (diff > 720) diff -= 1440;
+  return guess - diff * 60000;
+}
+export function freeSlots(d, s, day, now = Date.now()) {
+  const taken = new Set(d.patients.filter(p => p.slot).map(p => p.slot));
+  return slotTimes(s).filter(t => !taken.has(t) && budapestAt(day, t) > now - 60 * 60000); // 1 óránál régebbi időpont már nem választható
+}
+export function claimSlot(d, s, day, time, phone) {
+  if (!slotTimes(s).includes(time)) return { err: "gone" };
+  if (d.patients.some(p => p.slot === time)) return { err: "taken" };
+  const p = newPatient(d.patients, s, { initials: "", room: 0, src: "cal" });
+  Object.assign(p, { slot: time, time, apptAt: budapestAt(day, time), name: "", arrived: true, arrivedAt: Date.now(), phone: !!phone });
+  d.patients.push(p);
+  return { p };
+}

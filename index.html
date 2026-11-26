@@ -547,7 +547,7 @@ function viewDoctor(roomId) {
     $("#bRe").disabled = busy || !c; $("#bSkip").disabled = busy || !c;
     const nx = q[0];
     $("#hint").textContent = nx ? `Következő: ${nx.code}${nx.name || nx.initials ? " (" + (nx.name || nx.initials) + ")" : ""}${nx.time ? " · " + nx.time : ""}${nx.arrived === false ? " · még nem jelezte, hogy megérkezett" : ""}` : "A sor üres.";
-    $("#q").innerHTML = q.length ? q.slice(0, 30).map(p => `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.name || p.initials || "Időpont nélkül")}</b>${p.time ? "időpont " + esc(p.time) : "érkezett " + hhmm(p.createdAt)}${p.room || rooms.length < 2 ? "" : " · bármelyik rendelő"}</span><div class="row-actions">${p.arrived === false ? `<button class="btn small ghost" data-arr="${esc(p.id)}" title="Kattints rá, ha a beteg megérkezett">Még nincs itt</button>` : p.src === "cal" ? `<button class="pill waiting" style="border:0;cursor:pointer" data-arr="${esc(p.id)}" title="Visszavonás">Megérkezett</button>` : ""}<button class="btn small ghost" data-call="${esc(p.id)}">Behívás</button></div></div>`).join("") : `<p class="muted" style="margin:8px 0 0">Jelenleg senki nem vár.${S().icalUrl ? "" : " A naptár még nincs összekötve (Beállítások)."}</p>`;
+    $("#q").innerHTML = q.length ? q.slice(0, 30).map(p => `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.name || p.initials || (p.time ? "Időpontra érkezett" : "Időpont nélkül"))}</b>${p.time ? "időpont " + esc(p.time) : "érkezett " + hhmm(p.createdAt)}${p.room || rooms.length < 2 ? "" : " · bármelyik rendelő"}</span><div class="row-actions">${p.arrived === false ? `<button class="btn small ghost" data-arr="${esc(p.id)}" title="Kattints rá, ha a beteg megérkezett">Még nincs itt</button>` : p.src === "cal" && !p.slot ? `<button class="pill waiting" style="border:0;cursor:pointer" data-arr="${esc(p.id)}" title="Visszavonás">Megérkezett</button>` : ""}<button class="btn small ghost" data-call="${esc(p.id)}">Behívás</button></div></div>`).join("") : `<p class="muted" style="margin:8px 0 0">Jelenleg senki nem vár.</p>`;
     $("#syncNote").textContent = Store.syncErr ? "A naptárat most nem sikerült kiolvasni, a lista a legutóbbi állapotot mutatja." : "";
   }
   $("#q").onclick = e => { const ar = e.target.closest("[data-arr]")?.dataset.arr; if (ar) return act(() => Store.act({ type: "arrive", id: ar }));
@@ -601,7 +601,7 @@ function viewReception() {
       const where = p.status === "called" || p.status === "done" ? roomName(p.calledRoom) : (p.room ? roomName(p.room) : "Bármelyik");
       const acts = p.status === "missed" ? `<button class="btn small ghost" data-a="back" data-id="${esc(p.id)}">Vissza a sorba</button>`
         : p.status === "waiting" ? `<button class="btn small ghost" data-a="del" data-id="${esc(p.id)}">Törlés</button>` : "";
-      return `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.name || p.initials || "Időpont nélkül")}</b>${esc(where)} · ${hhmm(p.createdAt)}${p.src === "qr" ? " · mobilról" : ""}</span><div class="row-actions"><span class="pill ${p.status}">${LBL[p.status]}</span>${acts}</div></div>`;
+      return `<div class="row"><span class="code">${esc(p.code)}</span><span class="meta"><b>${esc(p.name || p.initials || (p.time ? "Időpontra érkezett" : "Időpont nélkül"))}</b>${esc(where)} · ${hhmm(p.createdAt)}${p.src === "qr" ? " · mobilról" : ""}</span><div class="row-actions"><span class="pill ${p.status}">${LBL[p.status]}</span>${acts}</div></div>`;
     }).join("") : `<p class="muted" style="margin:8px 0 0">${tab === "active" ? "Most senki nem vár. Az első érkező sorszámát bal oldalt tudod kiadni." : "Ma még nem volt beteg."}</p>`;
   }
   const pendingDel = new Set();
@@ -635,6 +635,7 @@ function viewSettings() {
       <section class="card grid">
         <h2 style="font-size:20px">Google Naptár</h2>
         <p class="muted" style="margin:0;font-size:14px">A rendelési idő alatti, „Vizsgálat – Név” formájú bejegyzésekből a rendszer automatikusan sorszámot ad. Az időpontot és a beteg nevét veszi át. A név csak az orvosi képernyőn látszik, a betegek felé soha, és a nap végén törlődik.</p>
+        <p class="note" style="margin:0;font-size:14px"><b>Naptár nélkül, nevek nélkül:</b> ha a mezőt üresen hagyja, a betegek a bejárati tableten vagy telefonon maguk választják ki az időpontjukat a rendelési idő 15 perces időpontjai közül. Így a rendszer semmilyen nevet nem kap és nem tárol.</p>
         <div class="field"><label for="ic">A naptár titkos iCal-címe</label><input type="text" id="ic" value="${esc(s.icalUrl || "")}" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics" autocomplete="off"></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap"><div class="field" style="flex:1;min-width:120px"><label for="hf">Rendelés kezdete</label><input type="text" id="hf" value="${esc(s.hoursFrom || "16:00")}"></div><div class="field" style="flex:1;min-width:120px"><label for="ht">Rendelés vége</label><input type="text" id="ht" value="${esc(s.hoursTo || "20:00")}"></div></div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn small ghost" type="button" id="syncNow">Naptár beolvasása most</button><span class="muted" id="syncRes" style="font-size:13px"></span></div>
@@ -739,7 +740,14 @@ function viewKiosk() {
     const arrow = `<div class="ki-arrow" style="--a:${ANG[dir] ?? 0}deg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></div>`;
     return `<div class="ki-wait ${left ? "l" : ""}">${left ? arrow : ""}<div><b>Kérjük, fáradjon be a váróterembe,</b><br>és foglaljon helyet. A hívást ott a kijelzőn és hangosan is jelezzük.</div>${left ? "" : arrow}</div>`; };
   const later = (ms) => { clearTimeout(timer); timer = setTimeout(back, ms); };
-  const open = () => Store.patients.filter(p => p.src === "cal" && p.arrived === false && p.status === "waiting").sort((a, b) => (a.apptAt || 0) - (b.apptAt || 0));
+  const slotMode = () => !S().icalUrl;
+  const freeSlots = () => { // naptár nélkül: a rendelési idő 15 perces időpontjai, amelyeket még senki nem választott
+    const toM = t => { const [h, m] = String(t).split(":").map(Number); return h * 60 + m; };
+    const nowM = toM(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Budapest", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date()));
+    const taken = new Set(Store.patients.filter(p => p.slot).map(p => p.slot)), out = [];
+    for (let m = toM(S().hoursFrom || "16:00"); m + 15 <= toM(S().hoursTo || "20:00"); m += 15) { const t = String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); if (!taken.has(t) && m > nowM - 60) out.push(t); }
+    return out; };
+  const open = () => slotMode() ? freeSlots().map(t => ({ id: "slot:" + t, time: t })) : Store.patients.filter(p => p.src === "cal" && p.arrived === false && p.status === "waiting").sort((a, b) => (a.apptAt || 0) - (b.apptAt || 0));
   function draw() {
     let body = "";
     if (screen === "home") {
@@ -773,10 +781,11 @@ function viewKiosk() {
       busy = false; return draw();
     }
     if (ar) {
-      const p = Store.patients.find(x => x.id === ar);
-      if (!p || p.arrived !== false) return back();
+      const isSlot = ar.startsWith("slot:");
+      const p = isSlot ? { time: ar.slice(5) } : Store.patients.find(x => x.id === ar);
+      if (!p || (!isSlot && p.arrived !== false)) return back();
       busy = true;
-      try { await Store.act({ type: "arrive", id: ar }); msg = `<h1>Köszönjük, megérkezését rögzítettük.</h1><p class="lead">Az Ön időpontja:</p><div class="num">${esc(p.time || "")}</div><p class="lead" style="max-width:40ch">Amikor ez az időpont megjelenik a kijelzőn, fáradjon a rendelőbe.</p>${toWait()}`; screen = "done"; }
+      try { await Store.act(isSlot ? { type: "slot", time: p.time } : { type: "arrive", id: ar }); msg = `<h1>Köszönjük, megérkezését rögzítettük.</h1><p class="lead">Az Ön időpontja:</p><div class="num">${esc(p.time || "")}</div><p class="lead" style="max-width:40ch">Amikor ez az időpont megjelenik a kijelzőn, fáradjon a rendelőbe.</p>${toWait()}`; screen = "done"; }
       catch { msg = `<h1>Most nem sikerült</h1><p class="lead">Kérjük, próbálja újra, vagy szóljon az orvosnak.</p>`; screen = "done"; }
       busy = false; return draw();
     }

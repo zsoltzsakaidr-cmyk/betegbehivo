@@ -1,4 +1,4 @@
-import { sortKey, hasDb, isStaff, getPin, today, loadDay, saveDay, loadSettings, saveSettings, withLock, newPatient, qrToken, strip, send, body } from "./_lib.js";
+import { claimSlot, sortKey, hasDb, isStaff, getPin, today, loadDay, saveDay, loadSettings, saveSettings, withLock, newPatient, qrToken, strip, send, body } from "./_lib.js";
 const byNum = (a, b) => sortKey(a) - sortKey(b) || a.num - b.num;
 const waitingFor = (list, roomId) => list.filter(p => p.status === "waiting" && (!p.room || p.room === roomId)).sort(byNum);
 const calledIn = (list, roomId) => list.filter(p => p.status === "called" && p.calledRoom === roomId).sort((a, b) => b.calledAt - a.calledAt)[0];
@@ -46,6 +46,9 @@ export default async function handler(req, res) {
           const room = +a.room, p = find(a.id);
           if (p) { const cur = calledIn(L, room); if (cur && cur !== p) { cur.status = "done"; cur.doneAt = now; }
             p.status = "called"; p.calledRoom = room; p.calledAt = now; p.calls = (p.calls || 0) + 1; result = strip(p); }
+        } else if (a.type === "slot") {
+          const r = claimSlot(d, settings, day, String(a.time || ""), false);
+          if (r.err) throw new Error(r.err); result = strip(r.p);
         } else if (a.type === "arrive") {
           const p = find(a.id); if (p) p.arrived = !p.arrived;
         } else if (a.type === "back") {

@@ -1,4 +1,4 @@
-import { hasDb, today, loadDay, saveDay, loadSettings, withLock, newPatient, qrToken, redis, send, body, rid } from "./_lib.js";
+import { freeSlots, claimSlot, hasDb, today, loadDay, saveDay, loadSettings, withLock, newPatient, qrToken, redis, send, body, rid } from "./_lib.js";
 import { maybeSync } from "./_cal.js";
 export default async function handler(req, res) {
   if (!hasDb()) return send(res, 503, { error: "nodb" });
@@ -8,10 +8,11 @@ export default async function handler(req, res) {
     const valid = req.query?.t === await qrToken(day);
     let appointments = [];
     if (valid) {
-      try { await maybeSync(day); } catch {}
+      if (!s.icalUrl) appointments = freeSlots(await loadDay(day), s, day).map(t => ({ id: "slot:" + t, time: t }));
+      else { try { await maybeSync(day); } catch {}
       const d = await loadDay(day);
       appointments = d.patients.filter(p => p.src === "cal" && p.status === "waiting" && !p.phone) // a tableten megérkezett is választható, hogy a telefonon kövesse
-        .sort((a, b) => a.apptAt - b.apptAt).map(p => ({ id: p.id, time: p.time }));
+        .sort((a, b) => a.apptAt - b.apptAt).map(p => ({ id: p.id, time: p.time })); }
     }
     return send(res, 200, { valid, clinicName: s.clinicName, clinicSub: s.clinicSub, logo: s.logo, appointments,
       rooms: s.rooms.map(r => ({ id: r.id, name: r.name, doctor: r.doctor })) });
@@ -28,7 +29,11 @@ export default async function handler(req, res) {
   try {
     await withLock(async () => {
       const d = await loadDay(day, true);
-      if (a.claim) {
+      if (typeof a.claim === "string" && a.claim.startsWith("slot:")) {
+        if (settings.icalUrl) { err = "gone"; return; }
+        const r = claimSlot(d, settings, day, a.claim.slice(5), true);
+        if (r.err) { err = r.err; return; } p = r.p;
+      } else if (a.claim) {
         p = d.patients.find(x => x.id === a.claim && x.src === "cal");
         if (!p || p.status !== "waiting") { err = "gone"; return; }
         if (p.phone) { err = "taken"; return; }
