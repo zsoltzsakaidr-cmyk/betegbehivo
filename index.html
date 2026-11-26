@@ -8,8 +8,8 @@
 html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 /* Layout: egy oldal, négy nézet (#kijelzo, #orvos-N, #recepcio, #beallitasok). Nyugodt mélykék + zsálya. */
 :root{
-  --bg:#fbf6ee; --surface:#fffdf9; --line:#eadcc8; --fg:#3a2a1e; --muted:#8a7360;
-  --ink:#6b4a32; --sage:#b08a55; --sage-soft:#f1e4d0; --warn:#b5762a; --warn-soft:#f7eddf;
+  --bg:#f9f4ee; --surface:#fffdf9; --line:#e6d8c8; --fg:#3d2e24; --muted:#8c7a6b;
+  --ink:#8b6b55; --sage:#b8946a; --sage-soft:#efe3d4; --warn:#b5762a; --warn-soft:#f7eddf;
   --danger:#a8463d; --danger-soft:#f6e4e2;
   --display:"Manrope",ui-sans-serif,system-ui,sans-serif;
   --body:"Inter",ui-sans-serif,system-ui,sans-serif;
@@ -132,8 +132,8 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 .logo-prev img{max-height:48px;max-width:100%}
 
 /* ===== Váró-kijelző (TV): saját, mindig sötét megjelenés ===== */
-.tv{--tv-bg:#5c402c;--tv-bg2:#6b4a32;--tv-gold:#e6c28a;--tv-fg:#fdf8f0;--tv-muted:#e3d2bc;--tv-sage:#ecca93;--tv-line:rgba(255,255,255,.14);
-  position:fixed;inset:0;background:radial-gradient(1200px 700px at 15% 0%,#8a6444 0%,transparent 60%),radial-gradient(900px 600px at 100% 100%,#74533a 0%,transparent 60%),var(--tv-bg);
+.tv{--tv-bg:#8a6b56;--tv-bg2:#957560;--tv-gold:#f7e3c4;--tv-fg:#fffaf3;--tv-muted:#f3e7da;--tv-sage:#f7e3c4;--tv-line:rgba(255,255,255,.14);
+  position:fixed;inset:0;background:radial-gradient(1200px 700px at 15% 0%,#ab8b73 0%,transparent 60%),radial-gradient(900px 600px at 100% 100%,#7a5d49 0%,transparent 60%),var(--tv-bg);
   color:var(--tv-fg);display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;font-family:var(--body);color-scheme:dark;
   padding:calc(env(safe-area-inset-top,0px) + 2.2vw) max(2.6vw,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 1.6vw) max(2.6vw,env(safe-area-inset-left,0px))}
 .tv-top{display:flex;justify-content:space-between;align-items:center;gap:2vw}
