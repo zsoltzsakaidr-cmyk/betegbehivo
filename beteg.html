@@ -27,6 +27,11 @@ input,select{font:inherit;color:inherit;width:100%;background:var(--bg);border:1
 .called .code,.called .eyebrow,.called .muted{color:#fff}
 .room{font-family:var(--display);font-size:28px;font-weight:800}
 @keyframes pulse{50%{transform:scale(1.02)}}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.slot{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.slot b{font-family:var(--display);font-size:24px;font-variant-numeric:tabular-nums}.slot span{color:var(--muted);font-size:14px}
+.slot:active{transform:scale(.98)}.slot:disabled{opacity:.5}
+.link{font:inherit;background:none;border:0;color:var(--ink);text-decoration:underline;padding:4px 0;cursor:pointer;text-align:left}
 .note{background:var(--warn-soft);border-radius:12px;padding:12px 14px;font-size:14px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style></head><body>
@@ -50,7 +55,27 @@ async function start() {
   if (saved && saved.day === todayStr) return status(saved);
   if (!info || info.error) return app.innerHTML = `<div class="card"><h1>A szolgáltatás most nem érhető el</h1><p class="muted">Kérjük, jelentkezzen a recepción.</p></div>`;
   if (!info.valid) return app.innerHTML = brand() + `<div class="card"><h1>Ez a QR-kód lejárt</h1><p class="muted">A kód minden nap megújul. Kérjük, olvassa be a váróterem kijelzőjén látható friss kódot, vagy jelentkezzen a recepción.</p></div>`;
-  form();
+  if (info.appointments && info.appointments.length) return pick(); else form();
+}
+function pick() {
+  app.innerHTML = brand() + `<div class="card"><div class="eyebrow">Megérkezett?</div><h1>Válassza ki az időpontját</h1>
+    <p class="muted" style="margin:0">A nevek helyett csak az időpont és a monogram látszik.</p>
+    <div class="slots">${info.appointments.map(a => `<button class="slot" data-id="${esc(a.id)}"><b>${esc(a.time)}</b><span>${esc(a.initials || "–")}</span></button>`).join("")}</div>
+    <div id="err" class="note" hidden></div>
+    <button class="link" id="noappt">Nincs előre egyeztetett időpontom</button></div>`;
+  $("#noappt").onclick = form;
+  app.querySelector(".slots").onclick = async e => {
+    const btn = e.target.closest(".slot"); if (!btn) return;
+    app.querySelectorAll(".slot").forEach(x => x.disabled = true);
+    try {
+      const r = await fetch("/api/checkin", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({t, claim: btn.dataset.id})});
+      const j = await r.json(); if (!r.ok) throw new Error(j.error);
+      put("bh-ticket", j); status(j);
+    } catch (err) {
+      const m = {taken: "Ezt az időpontot már valaki kiválasztotta. Ha az Öné, kérjük, szóljon az orvosnak.", gone: "Ez az időpont már nem érhető el.", rate: "Túl sok próbálkozás erről a telefonról."}[err.message] || "Nem sikerült, kérjük, próbálja újra.";
+      $("#err").hidden = false; $("#err").textContent = m; app.querySelectorAll(".slot").forEach(x => x.disabled = false);
+    }
+  };
 }
 function form() {
   const rooms = info.rooms || [];
@@ -85,7 +110,7 @@ async function status(tk) {
     if (!info) info = {clinicName: s.clinicName, clinicSub: s.clinicSub};
     let body;
     if (s.status === "waiting") body = `<div class="card"><div class="eyebrow">Az Ön sorszáma</div><div class="code">${esc(s.code)}</div>
-      <div class="ahead"><b>${s.ahead}</b><span class="muted">${s.ahead ? "beteg vár Ön előtt" : "Ön következik"}</span></div>
+      ${s.time ? `<div class="muted">Időpont: <b style="color:var(--fg)">${esc(s.time)}</b></div>` : ""}<div class="ahead"><b>${s.ahead}</b><span class="muted">${s.ahead ? "beteg vár Ön előtt" : "Ön következik"}</span></div>
       <p class="muted small" style="margin:0">Tartsa nyitva ezt az oldalt. Amikor behívják, itt és a váróterem kijelzőjén is megjelenik.</p></div>`;
     else if (s.status === "called") body = `<div class="card called" role="alert"><div class="eyebrow">Önt hívják</div><div class="code">${esc(s.code)}</div>
       <div class="room">${esc(s.roomName || "Kérjük, fáradjon be")}</div>${s.doctor ? `<div class="muted">${esc(s.doctor)}</div>` : ""}</div>`;

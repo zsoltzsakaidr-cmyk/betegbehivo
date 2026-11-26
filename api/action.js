@@ -1,5 +1,5 @@
-import { hasDb, isStaff, getPin, today, loadDay, saveDay, loadSettings, saveSettings, withLock, newPatient, qrToken, strip, send, body } from "./_lib.js";
-const byNum = (a, b) => a.num - b.num;
+import { sortKey, hasDb, isStaff, getPin, today, loadDay, saveDay, loadSettings, saveSettings, withLock, newPatient, qrToken, strip, send, body } from "./_lib.js";
+const byNum = (a, b) => sortKey(a) - sortKey(b) || a.num - b.num;
 const waitingFor = (list, roomId) => list.filter(p => p.status === "waiting" && (!p.room || p.room === roomId)).sort(byNum);
 const calledIn = (list, roomId) => list.filter(p => p.status === "called" && p.calledRoom === roomId).sort((a, b) => b.calledAt - a.calledAt)[0];
 
@@ -11,7 +11,10 @@ export default async function handler(req, res) {
   const day = today();
   let result = null;
   try {
-    if (a.type === "settings") {
+    if (a.type === "sync") {
+      const { maybeSync } = await import("./_cal.js");
+      result = await maybeSync(day, true);
+    } else if (a.type === "settings") {
       const s = a.settings || {};
       if (typeof s.logo === "string" && s.logo.length > 400000) return send(res, 400, { error: "logo" });
       await saveSettings(s);
@@ -28,7 +31,7 @@ export default async function handler(req, res) {
           const room = +a.room;
           const cur = calledIn(L, room);
           if (cur) { cur.status = a.type === "skip" ? "missed" : "done"; cur.doneAt = now; }
-          const nx = waitingFor(L, room)[0];
+          const q = waitingFor(L, room); const nx = q.find(p => p.arrived !== false) || q[0];
           if (nx) { nx.status = "called"; nx.calledRoom = room; nx.calledAt = now; nx.calls = 1; result = strip(nx); }
         } else if (a.type === "recall") {
           const p = find(a.id); if (p && p.status === "called") { p.calledAt = now; p.calls = (p.calls || 1) + 1; result = strip(p); }
@@ -36,6 +39,8 @@ export default async function handler(req, res) {
           const room = +a.room, p = find(a.id);
           if (p) { const cur = calledIn(L, room); if (cur && cur !== p) { cur.status = "done"; cur.doneAt = now; }
             p.status = "called"; p.calledRoom = room; p.calledAt = now; p.calls = (p.calls || 0) + 1; result = strip(p); }
+        } else if (a.type === "arrive") {
+          const p = find(a.id); if (p) p.arrived = !p.arrived;
         } else if (a.type === "back") {
           const p = find(a.id); if (p) { p.status = "waiting"; p.calledRoom = 0; }
         } else if (a.type === "delete") {

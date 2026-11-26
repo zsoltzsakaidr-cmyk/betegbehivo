@@ -66,7 +66,7 @@ export async function redis(...cmd) {
 
 export const DEFAULT_SETTINGS = {
   clinicName: "Dr. Zsákai Zsolt", clinicSub: "Ortopéd Sebészeti Magánrendelés", prefix: "A",
-  rooms: [{ id: 1, name: "Rendelő", doctor: "" }], showReception: false,
+  rooms: [{ id: 1, name: "Rendelő", doctor: "" }], showReception: false, hoursFrom: "16:00", hoursTo: "19:30", icalUrl: "",
   showInitials: true, speech: true, gong: true, showQr: true, logo: ""
 };
 
@@ -147,7 +147,8 @@ export function newPatient(list, settings, { initials, room, src }) {
     initials: String(initials || "").toUpperCase().replace(/[^\p{L}. ]/gu, "").trim().slice(0, 6),
     room: roomOk ? room : 0, status: "waiting", createdAt: Date.now(), calledAt: 0, calledRoom: 0, calls: 0, src: src || "rec" };
 }
-export const strip = p => { const { k, ...rest } = p; return rest; };
+export const strip = p => { const { k, calUid, ...rest } = p; return rest; };
+export const sortKey = p => p.apptAt || p.createdAt;
 export function send(res, code, obj) { res.statusCode = code; res.setHeader("Content-Type", "application/json; charset=utf-8"); res.setHeader("Cache-Control", "no-store"); res.end(JSON.stringify(obj)); }
 export async function body(req) {
   if (req.body && typeof req.body === "object") return req.body;
