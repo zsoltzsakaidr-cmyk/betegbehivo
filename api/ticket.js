@@ -9,5 +9,5 @@ export default async function handler(req, res) {
   const elig = x => x.status === "waiting" && x.num < p.num && (!p.room || !x.room || x.room === p.room);
   const room = s.rooms.find(r => r.id === (p.calledRoom || p.room));
   send(res, 200, { code: p.code, status: p.status, ahead: p.status === "waiting" ? d.patients.filter(elig).length : 0,
-    roomName: room ? room.name : "", doctor: room ? room.doctor : "", calledAt: p.calledAt, calls: p.calls, clinicName: s.clinicName });
+    roomName: room ? room.name : "", doctor: room ? room.doctor : "", calledAt: p.calledAt, calls: p.calls, clinicName: s.clinicName, clinicSub: s.clinicSub });
 }

@@ -136,6 +136,7 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 .tv-brand{display:flex;align-items:center;gap:1.2vw;min-width:0}
 .tv-brand img{height:4.2vw;min-height:36px;max-width:22vw;object-fit:contain}
 .tv-brand .mark{width:4.2vw;height:4.2vw;min-width:36px;min-height:36px;border-radius:1vw;background:rgba(255,255,255,.08)}
+.tv-brand .s{color:var(--tv-muted);font-size:clamp(12px,1.15vw,24px);margin-top:.2vw}
 .tv-brand .n{font-family:var(--display);font-weight:700;font-size:clamp(18px,2vw,40px)}
 .tv-clock{text-align:right}
 .tv-clock .t{font-family:var(--display);font-weight:700;font-size:clamp(24px,3.2vw,64px);font-variant-numeric:tabular-nums;line-height:1}
@@ -209,7 +210,8 @@ const ICON = {
 };
 
 const DEFAULT_SETTINGS = {
-  clinicName: "Magánrendelő",
+  clinicName: "Dr. Zsákai Zsolt",
+  clinicSub: "Ortopéd Sebészeti Magánrendelés",
   prefix: "A",
   rooms: [{id:1, name:"1-es rendelő", doctor:""}, {id:2, name:"2-es rendelő", doctor:""}],
   showInitials: true,
@@ -334,7 +336,7 @@ function on(fnP, fnS) { if (fnP) cleanup.push(Store.onPatients(fnP)); if (fnS) c
 
 function viewHome() {
   const rooms = S().rooms.map(r => `<a href="#orvos-${r.id}">${esc(r.name)}</a>`).join("");
-  app.innerHTML = shell("", "Betegbehívó rendszer", `
+  app.innerHTML = shell("", S().clinicSub || "Betegbehívó rendszer", `
     <div class="eyebrow">Betegbehívó</div>
     <h1 class="hero-h">Nyugodt váróterem, egy gombnyomásos behívás.</h1>
     <p class="muted" style="max-width:62ch;margin:0">Három nézet, amelyek valós időben látják egymást. Nyisd meg mindegyiket a saját eszközén: a kijelzőt a váróbeli TV-n, az orvosi felületet a rendelő tabletjén vagy gépén, a recepciót az asztalnál.</p>
@@ -391,7 +393,7 @@ function viewDisplay() {
   const seen = new Map(); let primed = false, lastShownKey = "";
   function brand() {
     const s = S();
-    $("#tvBrand").innerHTML = (s.logo ? `<img src="${esc(s.logo)}" alt="">` : `<div class="mark">${ICON.cross}</div>`) + `<div class="n">${esc(s.clinicName)}</div>`;
+    $("#tvBrand").innerHTML = (s.logo ? `<img src="${esc(s.logo)}" alt="">` : `<div class="mark">${ICON.cross}</div>`) + `<div><div class="n">${esc(s.clinicName)}</div>${s.clinicSub ? `<div class="s">${esc(s.clinicSub)}</div>` : ""}</div>`;
   }
   function render(list, announce) {
     const s = S();
@@ -556,7 +558,8 @@ function viewSettings() {
     <div class="set-grid">
       <section class="card grid">
         <h2 style="font-size:20px">Arculat</h2>
-        <div class="field"><label for="cn">A rendelő neve</label><input type="text" id="cn" value="${esc(s.clinicName)}"></div>
+        <div class="field"><label for="cn">Név</label><input type="text" id="cn" value="${esc(s.clinicName)}"></div>
+        <div class="field"><label for="cs">Alcím</label><input type="text" id="cs" value="${esc(s.clinicSub || "")}" placeholder="pl. Ortopéd Sebészeti Magánrendelés"></div>
         <div class="field"><label for="lg">Logó (PNG, JPG vagy SVG)</label><div class="logo-prev" id="lp"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap"><input type="file" id="lg" accept="image/*" style="font-size:13px;max-width:100%"><button class="btn small ghost" type="button" id="lgx">Logó eltávolítása</button></div></div>
         <div class="field"><label for="px">Sorszám előtag</label><input type="text" id="px" maxlength="2" value="${esc(s.prefix)}" style="max-width:120px"></div>
@@ -599,7 +602,7 @@ function viewSettings() {
   };
   $("#test").onclick = () => { Sound.unlock(); if ($("#gg").checked) Sound.gong(); setTimeout(() => { if ($("#sp").checked) Sound.say(spoken({code: (s.prefix || "A") + "-012", calledRoom: s.rooms[0].id})); }, 1500); };
   $("#save").onclick = async () => {
-    s.clinicName = $("#cn").value.trim() || "Magánrendelő";
+    s.clinicName = $("#cn").value.trim() || "Dr. Zsákai Zsolt"; s.clinicSub = $("#cs").value.trim();
     s.prefix = ($("#px").value.trim() || "A").toUpperCase();
     s.showInitials = $("#si").checked; s.showQr = $("#sq").checked; s.gong = $("#gg").checked; s.speech = $("#sp").checked;
     s.rooms = s.rooms.map(r => ({id: r.id, name: r.name.trim() || r.id + "-es rendelő", doctor: (r.doctor || "").trim()}));

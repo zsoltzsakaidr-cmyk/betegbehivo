@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     const s = await loadSettings();
     const valid = req.query?.t === await qrToken(day);
-    return send(res, 200, { valid, clinicName: s.clinicName, logo: s.logo, rooms: s.rooms.map(r => ({ id: r.id, name: r.name, doctor: r.doctor })) });
+    return send(res, 200, { valid, clinicName: s.clinicName, clinicSub: s.clinicSub, logo: s.logo, rooms: s.rooms.map(r => ({ id: r.id, name: r.name, doctor: r.doctor })) });
   }
   if (req.method !== "POST") return send(res, 405, { error: "method" });
   const a = await body(req);
