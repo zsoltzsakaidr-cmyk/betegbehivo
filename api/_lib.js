@@ -120,6 +120,7 @@ export async function loadSettings(fresh = false) {
   const stored = raw ? JSON.parse(raw) : {};
   if (Array.isArray(stored.rooms) && stored.rooms.length === 2 && stored.rooms[0].name === "1-es rendelő" && stored.rooms[1].name === "2-es rendelő" && !stored.rooms[0].doctor && !stored.rooms[1].doctor) delete stored.rooms; // régi alapérték
   if (!stored.zsPrefix) { if (!stored.prefix || stored.prefix === "A") stored.prefix = "ZS"; stored.zsPrefix = true; } // 2026-11-26: alap előtag ZS
+  if (!stored.logoReset) { delete stored.logo; stored.logoReset = true; } // 2026-11-26: beépített logó, a korábban feltöltött kép törölve
   if (!stored.iniOff) { stored.showInitials = false; stored.iniOff = true; } // 2026-11-26: Zsolt kérése, monogram nem kell
   if (stored.clinicName === "Magánrendelő") { delete stored.clinicName; delete stored.clinicSub; } // régi alapérték
   if (stored.hoursTo === "19:30") stored.hoursTo = "20:00"; // régi alapérték (2026-11-26: rendelés 20:00-ig)

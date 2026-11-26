@@ -8,8 +8,8 @@
 html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 /* Layout: egy oldal, négy nézet (#kijelzo, #orvos-N, #recepcio, #beallitasok). Nyugodt mélykék + zsálya. */
 :root{
-  --bg:#f7f2ea; --surface:#fffcf8; --line:#e7ddd0; --fg:#2b1f17; --muted:#7a6655;
-  --ink:#4a3426; --sage:#9d7c4d; --sage-soft:#ece2d4; --warn:#b5762a; --warn-soft:#f7eddf;
+  --bg:#fbf6ee; --surface:#fffdf9; --line:#eadcc8; --fg:#3a2a1e; --muted:#8a7360;
+  --ink:#6b4a32; --sage:#b08a55; --sage-soft:#f1e4d0; --warn:#b5762a; --warn-soft:#f7eddf;
   --danger:#a8463d; --danger-soft:#f6e4e2;
   --display:"Manrope",ui-sans-serif,system-ui,sans-serif;
   --body:"Inter",ui-sans-serif,system-ui,sans-serif;
@@ -132,8 +132,8 @@ input[type=text],select{background:var(--bg);border:1px solid var(--line);border
 .logo-prev img{max-height:48px;max-width:100%}
 
 /* ===== Váró-kijelző (TV): saját, mindig sötét megjelenés ===== */
-.tv{--tv-bg:#24180f;--tv-bg2:#33231a;--tv-gold:#d1ab72;--tv-fg:#f8f1e7;--tv-muted:#bfae99;--tv-sage:#d1ab72;--tv-line:rgba(255,255,255,.09);
-  position:fixed;inset:0;background:radial-gradient(1200px 700px at 15% 0%,#4a3122 0%,transparent 60%),radial-gradient(900px 600px at 100% 100%,#3a2a1c 0%,transparent 60%),var(--tv-bg);
+.tv{--tv-bg:#5c402c;--tv-bg2:#6b4a32;--tv-gold:#e6c28a;--tv-fg:#fdf8f0;--tv-muted:#e3d2bc;--tv-sage:#ecca93;--tv-line:rgba(255,255,255,.14);
+  position:fixed;inset:0;background:radial-gradient(1200px 700px at 15% 0%,#8a6444 0%,transparent 60%),radial-gradient(900px 600px at 100% 100%,#74533a 0%,transparent 60%),var(--tv-bg);
   color:var(--tv-fg);display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;font-family:var(--body);color-scheme:dark;
   padding:calc(env(safe-area-inset-top,0px) + 2.2vw) max(2.6vw,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 1.6vw) max(2.6vw,env(safe-area-inset-left,0px))}
 .tv-top{display:flex;justify-content:space-between;align-items:center;gap:2vw}
@@ -429,7 +429,7 @@ function viewDisplay() {
   const seen = new Map(); let primed = false, lastShownKey = "";
   function brand() {
     const s = S();
-    $("#tvBrand").innerHTML = !s.logo ? `<img class="tv-lg" src="/logo-gold.png" alt="${esc(s.clinicName)}">${s.clinicSub ? `<div class="s tv-lgsub">${esc(s.clinicSub)}</div>` : ""}` : (s.logo ? `<img src="${esc(s.logo)}" alt="">` : `<div class="mark">${ICON.cross}</div>`) + `<div><div class="n">${esc(s.clinicName)}</div>${s.clinicSub ? `<div class="s">${esc(s.clinicSub)}</div>` : ""}</div>`;
+    $("#tvBrand").innerHTML = !s.logo ? `<img class="tv-lg" src="/logo-light.png" alt="${esc(s.clinicName)}">${s.clinicSub ? `<div class="s tv-lgsub">${esc(s.clinicSub)}</div>` : ""}` : (s.logo ? `<img src="${esc(s.logo)}" alt="">` : `<div class="mark">${ICON.cross}</div>`) + `<div><div class="n">${esc(s.clinicName)}</div>${s.clinicSub ? `<div class="s">${esc(s.clinicSub)}</div>` : ""}</div>`;
   }
   function render(list, announce) {
     const s = S();
@@ -478,7 +478,7 @@ function viewDisplay() {
     render(list, fresh); if (fresh) runQ();
   }
   Store.setInterval(2500); cleanup.push(() => Store.setInterval(4000));
-  const qr = () => { const on = S().showQr; $("#tvQrBox").hidden = !on; if (on) drawQr($("#tvQr"), 240, "#24180f", "#fffcf8"); };
+  const qr = () => { const on = S().showQr; $("#tvQrBox").hidden = !on; if (on) drawQr($("#tvQr"), 240, "#24180f", "#fffdf9"); };
   brand(); qr(); on(qr, qr);
   if (Store.loaded) onList(Store.patients); else render([], false);
   on(onList, () => { brand(); lastShownKey = ""; render(Store.patients, false); });
@@ -588,7 +588,7 @@ function viewReception() {
     }
   };
   draw(Store.patients);
-  const q = () => { drawQr($("#recQr"), 140, "#1c3a4b", "#fffcf8"); $("#recQrLink").href = checkinUrl(); };
+  const q = () => { drawQr($("#recQr"), 140, "#1c3a4b", "#fffdf9"); $("#recQrLink").href = checkinUrl(); };
   q(); on(draw, null); on(q, null);
 }
 
