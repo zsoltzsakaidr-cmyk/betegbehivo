@@ -59,8 +59,8 @@ async function start() {
 }
 function pick() {
   app.innerHTML = brand() + `<div class="card"><div class="eyebrow">Megérkezett?</div><h1>Válassza ki az időpontját</h1>
-    <p class="muted" style="margin:0">A nevek helyett csak az időpont és a monogram látszik.</p>
-    <div class="slots">${info.appointments.map(a => `<button class="slot" data-id="${esc(a.id)}"><b>${esc(a.time)}</b><span>${esc(a.initials || "–")}</span></button>`).join("")}</div>
+    <p class="muted" style="margin:0">Érintse meg a saját időpontját.</p>
+    <div class="slots">${info.appointments.map(a => `<button class="slot" data-id="${esc(a.id)}"><b>${esc(a.time)}</b></button>`).join("")}</div>
     <div id="err" class="note" hidden></div>
     <button class="link" id="noappt">Nincs előre egyeztetett időpontom</button></div>`;
   $("#noappt").onclick = form;
@@ -82,16 +82,15 @@ function form() {
   app.innerHTML = brand() + `<div class="card"><div class="eyebrow">Bejelentkezés</div><h1>Sorszám kérése</h1>
     <p class="muted" style="margin:0">Néhány másodperc, és itt követheti, mikor kerül sorra. A váróterem kijelzője is mutatja a hívást.</p>
     <form id="f" style="display:flex;flex-direction:column;gap:14px">
-      <div><label for="ini">Monogram (nem kötelező)</label><input id="ini" maxlength="6" placeholder="pl. K. A." autocomplete="off"></div>
       ${rooms.length > 1 ? `<div><label for="rm">Kihez érkezett?</label><select id="rm"><option value="0">Nem tudom / bármelyik</option>${rooms.map(r => `<option value="${r.id}">${esc(r.doctor ? r.doctor + " (" + r.name + ")" : r.name)}</option>`).join("")}</select></div>` : ""}
       <button class="btn" type="submit">Sorszámot kérek</button>
-      <p class="muted small" style="margin:0">Nevet nem kérünk. Csak a sorszámot és a megadott monogramot tároljuk, ezek a nap végén törlődnek.</p>
+      <p class="muted small" style="margin:0">Nevet nem kérünk. Csak a sorszámot tároljuk, ez a nap végén törlődik.</p>
       <div id="err" class="note" hidden></div>
     </form></div>`;
   $("#f").onsubmit = async e => {
     e.preventDefault(); const b = $("#f .btn"); b.disabled = true;
     try {
-      const r = await fetch("/api/checkin", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({t, initials: $("#ini").value, room: $("#rm") ? +$("#rm").value : 0})});
+      const r = await fetch("/api/checkin", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({t, initials: "", room: $("#rm") ? +$("#rm").value : 0})});
       const j = await r.json();
       if (!r.ok) throw new Error(j.error);
       put("bh-ticket", j); status(j);

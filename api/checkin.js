@@ -11,7 +11,7 @@ export default async function handler(req, res) {
       try { await maybeSync(day); } catch {}
       const d = await loadDay(day);
       appointments = d.patients.filter(p => p.src === "cal" && p.status === "waiting" && !p.arrived)
-        .sort((a, b) => a.apptAt - b.apptAt).map(p => ({ id: p.id, time: p.time, initials: p.initials }));
+        .sort((a, b) => a.apptAt - b.apptAt).map(p => ({ id: p.id, time: p.time }));
     }
     return send(res, 200, { valid, clinicName: s.clinicName, clinicSub: s.clinicSub, logo: s.logo, appointments,
       rooms: s.rooms.map(r => ({ id: r.id, name: r.name, doctor: r.doctor })) });
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
         if (p.arrived) { err = "taken"; return; }
         p.arrived = true; p.arrivedAt = Date.now(); p.k = rid(16);
       } else {
-        p = newPatient(d.patients, settings, { initials: a.initials, room: +a.room || 0, src: "qr" });
+        p = newPatient(d.patients, settings, { initials: "", room: +a.room || 0, src: "qr" });
         d.patients.push(p);
       }
       await saveDay(day, d);

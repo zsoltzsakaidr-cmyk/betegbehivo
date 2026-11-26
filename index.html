@@ -239,7 +239,7 @@ const DEFAULT_SETTINGS = {
   prefix: "A",
   rooms: [{id:1, name:"Rendelő", doctor:""}],
   showReception: false,
-  showInitials: true,
+  showInitials: false,
   speech: true,
   gong: true,
   showQr: true,
@@ -369,14 +369,14 @@ function viewHome() {
     <h1 class="hero-h">Nyugodt váróterem, egy gombnyomásos behívás.</h1>
     <p class="muted" style="max-width:62ch;margin:0">Nyisd meg a kijelzőt a váróbeli TV-n, az orvosi felületet a rendelő gépén. A betegek a kijelzőn látható QR-kóddal maguk kérnek sorszámot, a kettő valós időben látja egymást.</p>
     <div class="tiles">
-      <a class="tile" href="#kijelzo"><div class="ico">${ICON.tv}</div><h3>Váró-kijelző</h3><p class="muted" style="margin:0">Teljes képernyős nézet a TV-re. Gong és magyar bemondás hívásnál, csak sorszám és monogram látszik.</p></a>
+      <a class="tile" href="#kijelzo"><div class="ico">${ICON.tv}</div><h3>Váró-kijelző</h3><p class="muted" style="margin:0">Teljes képernyős nézet a TV-re. Gong és magyar bemondás hívásnál, csak a sorszám és az időpont látszik.</p></a>
       <div class="tile"><div class="ico">${ICON.doc}</div><h3>Orvosi felület</h3><p class="muted" style="margin:0">Következő, Újrahívás, Nem jelent meg${S().rooms.length > 1 ? ". Válaszd ki a rendelőt:" : ", és kézzel is adhatsz ki sorszámot."}</p>${S().rooms.length > 1 ? `<div class="links">${rooms}</div>` : `<div class="links"><a href="#orvos-${S().rooms[0].id}">Megnyitás</a></div>`}</div>
       <a class="tile" href="#bejelentkezes"><div class="ico">${ICON.desk}</div><h3>Bejelentkező tablet</h3><p class="muted" style="margin:0">Az ajtónál, telefon nélküli betegeknek: időpontra érkezés jelzése vagy sorszám kérése két nagy gombbal.</p></a>
       <a class="tile" href="#recepcio" ${S().showReception ? "" : "hidden"}><div class="ico">${ICON.desk}</div><h3>Recepció</h3><p class="muted" style="margin:0">Érkező beteg rögzítése, sorszám kiadása, a napi sor áttekintése.</p></a>
     </div>
     <div class="steps">
       <div class="card"><div class="eyebrow">Kipróbálás</div><p>Olvasd be telefonnal a kijelzőn látható QR-kódot, és kérj sorszámot. Az Orvos nézetben a „Következő beteg” gombbal hívd be, a kijelzőn és a telefonon is megjelenik.</p></div>
-      <div class="card"><div class="eyebrow">Adatvédelem</div><p>A kijelzőn csak sorszám és opcionális monogram jelenik meg. Teljes nevet és egészségügyi adatot a rendszer nem tárol, a régi napok sorai automatikusan törlődnek.</p></div>
+      <div class="card"><div class="eyebrow">Adatvédelem</div><p>A kijelzőn csak a sorszám és az időpont jelenik meg. Teljes nevet és egészségügyi adatot a rendszer nem tárol, a régi napok sorai automatikusan törlődnek.</p></div>
       <div class="card"><div class="eyebrow">Arculat</div><p>A Beállításokban feltölthető a logó, átírható a rendelő neve és a rendelők listája.</p></div>
     </div>`);
   on(null, route);
