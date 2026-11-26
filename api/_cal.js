@@ -38,7 +38,7 @@ export function eventsForDay(ics, day, from = "16:00", to = "19:30") {
     const sum = ((get("SUMMARY") || {}).val || "").replace(/\\([,;\\])/g, "$1").replace(/\\n/gi, " ");
     if (/szabads|távol|pihen/i.test(sum)) continue;
     if (!/\s[-–—]\s/.test(sum)) continue;               // csak „Vizsgálat – Név” formájú bejegyzés
-    if (st.time < from || st.time >= to) continue;      // csak rendelési időben
+    if (st.time < from || st.time > to) continue;      // csak rendelési időben
     out.push({ uid: (uid + rec).slice(0, 200), time: st.time, at: st.at, initials: initialsOf(sum) });
   }
   return out.sort((a, b) => a.at - b.at);
