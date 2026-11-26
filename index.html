@@ -577,7 +577,7 @@ function viewSettings() {
         <h2 style="font-size:20px">Google Naptár</h2>
         <p class="muted" style="margin:0;font-size:14px">A rendelési idő alatti, „Vizsgálat – Név” formájú bejegyzésekből a rendszer automatikusan sorszámot ad. Csak az időpontot és a monogramot veszi át.</p>
         <div class="field"><label for="ic">A naptár titkos iCal-címe</label><input type="text" id="ic" value="${esc(s.icalUrl || "")}" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics" autocomplete="off"></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap"><div class="field" style="flex:1;min-width:120px"><label for="hf">Rendelés kezdete</label><input type="text" id="hf" value="${esc(s.hoursFrom || "16:00")}"></div><div class="field" style="flex:1;min-width:120px"><label for="ht">Rendelés vége</label><input type="text" id="ht" value="${esc(s.hoursTo || "19:30")}"></div></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><div class="field" style="flex:1;min-width:120px"><label for="hf">Rendelés kezdete</label><input type="text" id="hf" value="${esc(s.hoursFrom || "16:00")}"></div><div class="field" style="flex:1;min-width:120px"><label for="ht">Rendelés vége</label><input type="text" id="ht" value="${esc(s.hoursTo || "20:00")}"></div></div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn small ghost" type="button" id="syncNow">Naptár beolvasása most</button><span class="muted" id="syncRes" style="font-size:13px"></span></div>
       </section>
       <section class="card grid">
@@ -627,7 +627,7 @@ function viewSettings() {
   $("#save").onclick = async (quiet) => {
     s.clinicName = $("#cn").value.trim() || "Dr. Zsákai Zsolt"; s.clinicSub = $("#cs").value.trim();
     s.prefix = ($("#px").value.trim() || "A").toUpperCase();
-    s.showInitials = $("#si").checked; s.icalUrl = $("#ic").value.trim(); s.hoursFrom = /^\d{1,2}:\d{2}$/.test($("#hf").value.trim()) ? $("#hf").value.trim().padStart(5, "0") : "16:00"; s.hoursTo = /^\d{1,2}:\d{2}$/.test($("#ht").value.trim()) ? $("#ht").value.trim().padStart(5, "0") : "19:30"; s.showReception = $("#sr").checked; s.showQr = $("#sq").checked; s.gong = $("#gg").checked; s.speech = $("#sp").checked;
+    s.showInitials = $("#si").checked; s.icalUrl = $("#ic").value.trim(); s.hoursFrom = /^\d{1,2}:\d{2}$/.test($("#hf").value.trim()) ? $("#hf").value.trim().padStart(5, "0") : "16:00"; s.hoursTo = /^\d{1,2}:\d{2}$/.test($("#ht").value.trim()) ? $("#ht").value.trim().padStart(5, "0") : "20:00"; s.showReception = $("#sr").checked; s.showQr = $("#sq").checked; s.gong = $("#gg").checked; s.speech = $("#sp").checked;
     s.rooms = s.rooms.map(r => ({id: r.id, name: r.name.trim() || r.id + "-es rendelő", doctor: (r.doctor || "").trim()}));
     try { await Store.saveSettings(s); if (quiet !== true) toast("Beállítások mentve"); } catch (e) { console.warn(e); toast("Mentés nem sikerült."); }
   };

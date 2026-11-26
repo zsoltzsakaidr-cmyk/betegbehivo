@@ -25,7 +25,7 @@ export function initialsOf(summary) {
   const parts = name.split(/\s+/).filter(w => /^\p{L}/u.test(w)).slice(0, 3);
   return parts.map(w => w[0].toUpperCase() + ".").join(" ").slice(0, 8);
 }
-export function eventsForDay(ics, day, from = "16:00", to = "19:30") {
+export function eventsForDay(ics, day, from = "16:00", to = "20:00") {
   const out = [];
   for (const blk of unfold(ics).split("BEGIN:VEVENT").slice(1)) {
     const body = blk.split("END:VEVENT")[0];
@@ -51,7 +51,7 @@ export async function maybeSync(day, force = false) {
   let ics;
   try { const r = await fetch(s.icalUrl, { headers: { "User-Agent": "betegbehivo" } }); if (!r.ok) throw new Error("http " + r.status); ics = await r.text(); }
   catch (e) { await redis("SET", "bh:syncerr", e.message, "EX", "3600"); return { ok: false, reason: "fetch" }; }
-  const evs = eventsForDay(ics, day, s.hoursFrom || "16:00", s.hoursTo || "19:30");
+  const evs = eventsForDay(ics, day, s.hoursFrom || "16:00", s.hoursTo || "20:00");
   await withLock(async () => {
     const d = await loadDay(day, true); const L = d.patients; let changed = false;
     const byUid = new Map(L.filter(p => p.calUid).map(p => [p.calUid, p]));

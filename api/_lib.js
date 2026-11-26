@@ -66,7 +66,7 @@ export async function redis(...cmd) {
 
 export const DEFAULT_SETTINGS = {
   clinicName: "Dr. Zsákai Zsolt", clinicSub: "Ortopéd Sebészeti Magánrendelés", prefix: "A",
-  rooms: [{ id: 1, name: "Rendelő", doctor: "" }], showReception: false, hoursFrom: "16:00", hoursTo: "19:30", icalUrl: "",
+  rooms: [{ id: 1, name: "Rendelő", doctor: "" }], showReception: false, hoursFrom: "16:00", hoursTo: "20:00", icalUrl: "",
   showInitials: true, speech: true, gong: true, showQr: true, logo: ""
 };
 
@@ -120,6 +120,7 @@ export async function loadSettings(fresh = false) {
   const stored = raw ? JSON.parse(raw) : {};
   if (Array.isArray(stored.rooms) && stored.rooms.length === 2 && stored.rooms[0].name === "1-es rendelő" && stored.rooms[1].name === "2-es rendelő" && !stored.rooms[0].doctor && !stored.rooms[1].doctor) delete stored.rooms; // régi alapérték
   if (stored.clinicName === "Magánrendelő") { delete stored.clinicName; delete stored.clinicSub; } // régi alapérték
+  if (stored.hoursTo === "19:30") stored.hoursTo = "20:00"; // régi alapérték (2026-11-26: rendelés 20:00-ig)
   const val = Object.assign({}, DEFAULT_SETTINGS, stored);
   sCache = { val, at: Date.now() };
   return val;
