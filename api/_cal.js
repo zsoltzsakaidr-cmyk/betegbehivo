@@ -41,7 +41,7 @@ export function eventsForDay(ics, day, from = "16:00", to = "20:00") {
     const rec = (get("RECURRENCE-ID") || {}).val || "";
     const sum = ((get("SUMMARY") || {}).val || "").replace(/\\([,;\\])/g, "$1").replace(/\\n/gi, " ");
     if (/szabads|távol|pihen/i.test(sum)) continue;
-    if (!/\s[-–—]\s/.test(sum)) continue;               // csak „Vizsgálat – Név” formájú bejegyzés
+    if (!sum.trim()) continue;                         // üres című bejegyzés kimarad; „Vizsgálat – Név” vagy csak „Név” is jó
     if (st.time < from || st.time > to) continue;      // csak rendelési időben
     out.push({ uid: (uid + rec).slice(0, 200), time: st.time, at: st.at, initials: initialsOf(sum), name: nameOf(sum) });
   }

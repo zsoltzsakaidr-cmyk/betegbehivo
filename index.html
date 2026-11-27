@@ -716,7 +716,7 @@ function viewSettings() {
       </section>
       <section class="card grid">
         <h2 style="font-size:20px">Google Naptár</h2>
-        <p class="muted" style="margin:0;font-size:14px">A rendelési idő alatti, „Vizsgálat – Név” formájú bejegyzésekből a rendszer automatikusan sorszámot ad. Az időpontot és a beteg nevét veszi át. A név csak az orvosi képernyőn látszik, a betegek felé soha, és a nap végén törlődik.</p>
+        <p class="muted" style="margin:0;font-size:14px">A rendelési idő alatti bejegyzésekből (pl. „Kovács Anna” vagy „Vizsgálat – Kovács Anna”) a rendszer automatikusan sorszámot ad. Az időpontot és a beteg nevét veszi át. A név csak az orvosi képernyőn látszik, a betegek felé soha, és a nap végén törlődik.</p>
         <p class="note" style="margin:0;font-size:14px"><b>Naptár nélkül, nevek nélkül:</b> ha a mezőt üresen hagyja, a betegek a bejárati tableten vagy telefonon maguk választják ki az időpontjukat a rendelési idő 15 perces időpontjai közül. Így a rendszer semmilyen nevet nem kap és nem tárol.</p>
         <div class="field"><label for="ic">A naptár titkos iCal-címe</label><input type="text" id="ic" value="${esc(s.icalUrl || "")}" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics" autocomplete="off"></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap"><div class="field" style="flex:1;min-width:120px"><label for="hf">Rendelés kezdete</label><input type="text" id="hf" value="${esc(s.hoursFrom || "16:00")}"></div><div class="field" style="flex:1;min-width:120px"><label for="ht">Rendelés vége</label><input type="text" id="ht" value="${esc(s.hoursTo || "20:00")}"></div></div>
